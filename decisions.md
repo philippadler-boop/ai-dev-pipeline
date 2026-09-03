@@ -106,3 +106,34 @@ discovers `.claude/agents/*.md` from the session's working-directory root,
 and this session is rooted here, not at `WhisperFlow`. The project owner
 will run the smoke test directly in a Claude Code session opened on
 `WhisperFlow`; result to be logged here once done.
+
+---
+
+## 2026-09-03 — Independent audit of M2 evidence
+
+Reviewed WhisperFlow's files directly rather than trusting the plan's
+self-report. Confirmed: all five subagents committed at
+`WhisperFlow/.claude/agents/*.md` (commit `0c346ad`), every `tools:`
+allowlist matches `implementation-plan.md`'s M2 table exactly, `reviewer`
+has no `Write`/`Edit`. The plan's own "(files done, smoke test pending)"
+status is accurate, not overclaimed.
+
+New finding: `C:\Users\phili\OneDrive\Projects\.claude\settings.local.json`
+exists at the Projects root, not inside `WhisperFlow\.claude\`. This
+indicates the Claude Code/VS Code workspace is currently opened at the
+parent `Projects` folder rather than at `WhisperFlow` itself — the likely
+actual reason the smoke test is blocked (subagent discovery is relative to
+the workspace root), and a more precise diagnosis than "wrong session."
+Side effect: the Bash permissions already approved there (git add/commit/
+config/push, a couple of literal `mkdir` commands) are scoped to the whole
+`Projects` folder, not just WhisperFlow, so they'll silently apply to
+`ai-dev-pipeline` and any future sibling project — a minor deviation from
+the repo-scoped/least-privilege principle in Section 12/M6.
+
+Recommendation (not yet acted on): open `WhisperFlow` itself as the VS Code
+workspace root, not `Projects`, to unblock the smoke test and stop future
+permission grants from leaking across projects.
+
+Also noted: `docs/adr/` and `docs/validation/` exist on disk (created ahead
+of M4/M7) but are empty and untracked by git — harmless, won't appear on a
+fresh clone.
