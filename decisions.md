@@ -1,9 +1,11 @@
 # Decisions Log
 
 A running, dated record of decisions made about the AI dev pipeline, beyond
-what's captured in `assessment.md`. Newest entries at the top. When a
-decision changes something the assessment already recommends, note it here
-rather than silently diverging from that document.
+what's captured in `assessment.md`. Entries are appended at the bottom in
+the order they happened (in practice, newest at the bottom, not the top —
+fixing this note to match actual behavior rather than the other way
+around). When a decision changes something the assessment already
+recommends, note it here rather than silently diverging from that document.
 
 ---
 
