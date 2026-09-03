@@ -167,3 +167,53 @@ fix was applied). Results:
 
 M2 marked done on that basis: the one restriction that actually matters
 (reviewer can't edit) is verified at runtime, not just declared.
+
+---
+
+## 2026-09-03 — MCP-leak investigation resolved: tool allowlists confirmed hard-enforced
+
+Follow-up to the earlier smoke test gap. Sequence:
+
+1. Re-tested `analyst`/`developer`/`qa` in isolation (single-purpose "list
+   your tools" prompts, no competing task). `analyst` matched its declared
+   allowlist exactly. `developer` and `qa` also matched their declared
+   tools — but both additionally claimed `codegraph_explore`, an MCP tool
+   not present in either file's `tools:` line.
+2. User confirmed CodeGraph is a separate, self-installed tool
+   (`codegraph install` registers its MCP server into Claude Code, Cursor,
+   etc. at the agent/machine level — unrelated to WhisperFlow's own
+   per-subagent config).
+3. Tested `reviewer` with the same question, since it's the one subagent
+   where a real leak would actually matter (any extra tool beyond
+   `Read`/`Grep`/`Glob` would undercut the one hard guarantee this design
+   depends on). `reviewer` correctly distinguished between injected MCP
+   *server instructions* (descriptive context telling it how it would use
+   `codegraph_explore` if available) and an actual callable function —
+   reported it has neither, and correctly declined to "invoke" a function
+   with no schema entry rather than pretending to try.
+4. Re-tested `developer`/`qa` asking them to actually attempt invocation
+   rather than just listing tools. Both got the literal result
+   `Error: No such tool available: codegraph_explore` — confirming, by
+   actual runtime rejection rather than self-report, that neither has real
+   access to it either.
+
+**Conclusion:** this was a false alarm caused by self-report inaccuracy,
+not an actual gap in tool-allowlist enforcement. CodeGraph's MCP server
+injects descriptive usage instructions broadly (likely because it's
+registered at the machine/agent level), and `developer`/`qa` initially
+conflated "I have instructions describing this tool" with "I can call this
+tool." `reviewer` did not make that mistake unprompted; `developer`/`qa`
+did, but corrected immediately once asked to actually invoke it. In every
+case tested, the real callable tool schema matched the declared `tools:`
+allowlist exactly — confirmed at the strongest available evidence level
+(a literal invocation attempt and its rejection), not just a self-report.
+
+**Methodological lesson for future smoke tests (this project and any
+future one):** "list your tools" is a weaker test than "attempt to invoke
+tool X and report the literal result" — a self-report can describe
+injected context as if it were a capability; an actual invocation attempt
+cannot. Default to the invocation form going forward.
+
+This closes the M2 smoke-test evidence gap more thoroughly than originally
+planned: every subagent's tool boundary was confirmed by actual runtime
+behavior, not declaration alone.

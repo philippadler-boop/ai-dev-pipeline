@@ -76,9 +76,16 @@ not just a description in a document.
 
 **Evidence:** all five files + `CLAUDE.md` committed (`WhisperFlow` commit
 `0c346ad`); smoke test transcripts recorded in `decisions.md` (2026-09-03,
-"M2 smoke test run"). Reviewer's no-edit restriction independently
-confirmed at runtime; analyst/developer/qa confirmed by absence of overreach
-rather than by their own explicit self-report.
+"M2 smoke test run" and "MCP-leak investigation resolved"). Every
+subagent's actual callable tool schema was confirmed to match its declared
+`tools:` allowlist exactly, via literal invocation attempts (not just
+self-report) for reviewer, developer, and qa, and via exact self-report
+plus consistent behavior for analyst and architect. An initial false
+alarm (developer/qa appearing to have an extra MCP tool, `codegraph_explore`,
+from a separately machine-installed CodeGraph server) was run down and
+resolved: it was a self-report artifact (conflating injected MCP server
+instructions with an actual tool grant), not a real allowlist gap — see
+decisions.md for the full investigation.
 
 ## M3 — Spec Kit: Constitution + Specify
 
