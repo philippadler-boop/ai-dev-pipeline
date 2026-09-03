@@ -21,20 +21,28 @@ principle applied to building the pipeline itself.
 - [x] Open questions resolved (`decisions.md`)
 - [x] Pilot project chosen: WhisperFlow, idea captured
 
-## M1 — WhisperFlow on GitHub
+## M1 — WhisperFlow on GitHub (done)
 
 **Goal:** move WhisperFlow from a local-only repo to GitHub, since almost
 everything downstream (Issues, PRs, Actions, branch protection) needs it there.
 
-- Create a GitHub repo for WhisperFlow (personal account, private is fine
+- [x] Create a GitHub repo for WhisperFlow (personal account, private is fine
   to start — nothing here needs to be public).
-- Push the existing local history (`README.md`, `docs/ideas/initial-idea.md`).
-- Add a minimal branch protection rule on `main`: require a pull request
+- [x] Push the existing local history (`README.md`, `docs/ideas/initial-idea.md`).
+- [x] Add a minimal branch protection rule on `main`: require a pull request
   before merging. (Required status checks get added in M5, once there are
   checks to require — an empty required-check list blocks every PR.)
 
-**Evidence:** repo exists on GitHub, `git push` succeeded, `main` shows
-"Require a pull request before merging" enabled in branch settings.
+**Evidence:** repo exists at https://github.com/philippadler-boop/WhisperFlow,
+`git push` succeeded, `master` (this repo's default branch) shows branch
+protection enabled with "required_pull_request_reviews" active — confirmed
+via `gh api repos/.../branches/master` returning `"protected": true`.
+
+**Deviations from the plan, see `decisions.md`:** the repo is public, not
+private (branch protection on a private repo needs GitHub Pro on this
+account); the pilot's one pre-existing commit was amended to use the GitHub
+noreply email before the initial push, since GitHub rejects pushes that would
+expose a private email.
 
 ## M2 — Subagent definitions
 
