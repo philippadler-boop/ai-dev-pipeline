@@ -34,8 +34,14 @@ everything downstream (Issues, PRs, Actions, branch protection) needs it there.
   checks to require — an empty required-check list blocks every PR.)
 
 **Evidence:** private repo at https://github.com/philippadler-boop/WhisperFlow
-(GitHub Pro account), history pushed, `master` (this repo's default branch)
-protected requiring a pull request before merging.
+(GitHub Pro account), history pushed to `main` (renamed from the initial
+`master` default for consistency with this plan; old branch deleted).
+Verified via `gh api repos/philippadler-boop/WhisperFlow/branches/main/protection`:
+`required_pull_request_reviews` present (0 required approvals — direct
+pushes blocked, no approval count required yet), `required_status_checks`
+off pending M5, force-push and branch deletion both disabled. `enforce_admins`
+is `false` by design — the gate binds agents, not the repo owner's own
+override ability (Section 7).
 
 ## M2 — Subagent definitions
 

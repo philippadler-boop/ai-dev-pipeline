@@ -65,3 +65,23 @@ process rather than being trivial.
 Next step: open `../WhisperFlow` in VS Code / Claude Code and run GitHub
 Spec Kit's `specify` phase to turn the idea note into a concept brief and
 requirements spec (per decision 4 in the entry above).
+
+---
+
+## 2026-09-03 — M1 branch fixup: master → main, verified
+
+WhisperFlow's default branch was renamed from `master` to `main` for
+consistency with `assessment.md`/`implementation-plan.md` (both used `main`
+throughout). Sequence: renamed and pushed `main`, removed the protection
+rule blocking deletion of `master` (`gh api -X DELETE .../branches/master/protection`),
+deleted `master`, set `main` as the GitHub default branch, manually
+re-added the "require a pull request before merging" rule on `main`. The
+planning repo's own local branch (no GitHub remote) was renamed the same way
+for consistency, trivially since nothing depended on its name.
+
+Verified via `gh api` (not just observed in the UI) that the new rule on
+`main` matches M1's original intent: PR required, no approval count yet, no
+status checks yet (that's M5), force-push/deletion blocked. `enforce_admins`
+is `false`, meaning the repo owner can still bypass the rule directly —
+accepted as intentional (Section 7: human override stays available) rather
+than a gap to close.
