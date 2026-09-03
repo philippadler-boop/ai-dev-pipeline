@@ -22,7 +22,7 @@ project is chosen.
 
 - [x] Research & architecture assessment complete
 - [x] Open questions from the assessment resolved (see decisions.md)
-- [ ] Pilot project chosen
+- [x] Pilot project chosen: **WhisperFlow** (`../WhisperFlow`) — video subtitle generator
 - [ ] V1 implementation plan written
 - [ ] V1 built on the pilot project's repo
 

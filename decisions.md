@@ -33,3 +33,22 @@ rather than silently diverging from that document.
 **Still open:** where "shared project memory" (conventions, architecture
 summary, reusable subagent templates) should live once there's a second
 project — not decidable in the abstract, revisit when that project exists.
+
+---
+
+## 2026-09-03 — Pilot project chosen: WhisperFlow
+
+A tool that takes a given video and generates subtitles in a chosen
+language. Set up as its own repo at `../WhisperFlow` (local git, no GitHub
+remote yet), containing only the raw idea note so far
+(`../WhisperFlow/docs/ideas/initial-idea.md`).
+
+Chosen because it's self-contained and small enough to run through the full
+lifecycle without ballooning, while still forcing real architecture
+decisions (local vs. cloud transcription, local vs. cloud translation,
+subtitle format) that will actually exercise the Architect agent and ADR
+process rather than being trivial.
+
+Next step: open `../WhisperFlow` in VS Code / Claude Code and run GitHub
+Spec Kit's `specify` phase to turn the idea note into a concept brief and
+requirements spec (per decision 4 in the entry above).
