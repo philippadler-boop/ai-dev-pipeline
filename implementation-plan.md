@@ -43,7 +43,7 @@ off pending M5, force-push and branch deletion both disabled. `enforce_admins`
 is `false` by design — the gate binds agents, not the repo owner's own
 override ability (Section 7).
 
-## M2 — Subagent definitions
+## M2 — Subagent definitions (files done, smoke test pending)
 
 **Goal:** the five roles from `assessment.md` Section 3 exist as real,
 usable Claude Code subagents in WhisperFlow's own repo (`.claude/agents/`),
@@ -57,13 +57,19 @@ not just a description in a document.
 | `reviewer.md` | Read, Grep, Glob | **No Write/Edit** — this is deliberate (Section 3): a reviewer that can fix what it's reviewing isn't an independent review |
 | `qa.md` | Read, Bash, Grep, Glob, Write (validation report only) | Runs tests/build to gather evidence; writes the requirement → evidence validation report |
 
-Also add a repo-root `CLAUDE.md` for WhisperFlow itself (distinct from the
-planning repo's) stating: where specs/ADRs live, the branch-per-task
-convention, and that no subagent merges its own work.
+- [x] All five files committed under `WhisperFlow/.claude/agents/`, tool
+  allowlists matching the table above exactly.
+- [x] Repo-root `CLAUDE.md` added to WhisperFlow stating where specs/ADRs/
+  reports live, the branch-per-task convention, and that no subagent merges
+  its own work.
+- [ ] Smoke test: each subagent invoked once, confirmed to respond using
+  only its allowed tools (e.g. `reviewer` cannot be coaxed into editing a
+  file). Subagent discovery is tied to a session's working-directory root,
+  so this has to run from a Claude Code session rooted at `WhisperFlow`
+  itself, not from the planning repo — pending.
 
-**Evidence:** all five files committed under `.claude/agents/`; a smoke
-test where each subagent is invoked once and responds using only its
-allowed tools (e.g., confirm `reviewer` cannot be coaxed into editing a file).
+**Evidence:** all five files + `CLAUDE.md` committed (`WhisperFlow` commit
+`0c346ad`); smoke test result recorded in `decisions.md` once run.
 
 ## M3 — Spec Kit: Constitution + Specify
 

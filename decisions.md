@@ -87,3 +87,22 @@ status checks yet (that's M5), force-push/deletion blocked. `enforce_admins`
 is `false`, meaning the repo owner can still bypass the rule directly —
 accepted as intentional (Section 7: human override stays available) rather
 than a gap to close.
+
+---
+
+## 2026-09-03 — M2 subagent files shipped; smoke test deferred to a WhisperFlow-rooted session
+
+`analyst`, `architect`, `developer`, `reviewer`, and `qa` are committed at
+`WhisperFlow/.claude/agents/*.md` (commit `0c346ad`, pushed directly to
+`main` — same direct-push precedent as M1, since this is pipeline
+bootstrapping rather than a REQ-tracked task). `WhisperFlow/CLAUDE.md` was
+added alongside them. Each file's `tools:` allowlist matches
+`implementation-plan.md`'s M2 table exactly; `reviewer` carries no
+`Write`/`Edit`.
+
+M2's smoke test (invoke each subagent once, confirm it can't exceed its
+allowlist) can't run from this planning repo's session — Claude Code
+discovers `.claude/agents/*.md` from the session's working-directory root,
+and this session is rooted here, not at `WhisperFlow`. The project owner
+will run the smoke test directly in a Claude Code session opened on
+`WhisperFlow`; result to be logged here once done.
