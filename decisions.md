@@ -7,30 +7,16 @@ rather than silently diverging from that document.
 
 ---
 
-## 2026-09-03 — M1 complete: WhisperFlow pushed to GitHub, two deviations from plan
+## 2026-09-03 — M1 complete: WhisperFlow on GitHub
 
-WhisperFlow is now at https://github.com/philippadler-boop/WhisperFlow with
-branch protection on `master` requiring a pull request before merging. Two
-things came up during M1 that the plan (`implementation-plan.md`) didn't
-anticipate:
+WhisperFlow is at https://github.com/philippadler-boop/WhisperFlow — a
+private repo (this account is now on GitHub Pro), with branch protection on
+`master` requiring a pull request before merging. Commits use the GitHub
+noreply email, matching global git config.
 
-1. **Repo is public, not private.** GitHub's classic branch-protection API
-   returns 403 ("Upgrade to GitHub Pro or make this repository public") for
-   private repos on this account's plan. Since `implementation-plan.md`
-   already noted "nothing here needs to be public," made it public rather
-   than skip branch protection or pay for Pro. Revisit if this account's
-   plan changes, or if a future pilot project actually needs privacy.
-2. **Commit author email amended before first push.** The repo's sole
-   existing commit was authored with `philipp.adler@gmail.com`, from before
-   the global git config was switched to the GitHub noreply address. GitHub
-   rejects pushes that would publish a private email, so the commit was
-   amended (safe — it had never been pushed anywhere) to use
-   `243643600+philippadler-boop@users.noreply.github.com`, matching the
-   global config used for everything since.
-
-**Also installed:** GitHub CLI (`gh`, via `winget install --id GitHub.cli`),
-authenticated as `philippadler-boop` — needed for M1 and everything
-GitHub-related in M4 onward (Issues, PR traceability checks, etc.).
+GitHub CLI (`gh`) is installed and authenticated as `philippadler-boop`,
+needed for this and every GitHub-related step from M4 onward (Issues, PR
+traceability checks, etc.).
 
 ---
 

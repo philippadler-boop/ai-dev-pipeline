@@ -33,16 +33,9 @@ everything downstream (Issues, PRs, Actions, branch protection) needs it there.
   before merging. (Required status checks get added in M5, once there are
   checks to require — an empty required-check list blocks every PR.)
 
-**Evidence:** repo exists at https://github.com/philippadler-boop/WhisperFlow,
-`git push` succeeded, `master` (this repo's default branch) shows branch
-protection enabled with "required_pull_request_reviews" active — confirmed
-via `gh api repos/.../branches/master` returning `"protected": true`.
-
-**Deviations from the plan, see `decisions.md`:** the repo is public, not
-private (branch protection on a private repo needs GitHub Pro on this
-account); the pilot's one pre-existing commit was amended to use the GitHub
-noreply email before the initial push, since GitHub rejects pushes that would
-expose a private email.
+**Evidence:** private repo at https://github.com/philippadler-boop/WhisperFlow
+(GitHub Pro account), history pushed, `master` (this repo's default branch)
+protected requiring a pull request before merging.
 
 ## M2 — Subagent definitions
 
