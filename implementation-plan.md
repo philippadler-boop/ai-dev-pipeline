@@ -43,7 +43,7 @@ off pending M5, force-push and branch deletion both disabled. `enforce_admins`
 is `false` by design — the gate binds agents, not the repo owner's own
 override ability (Section 7).
 
-## M2 — Subagent definitions (files done, smoke test pending)
+## M2 — Subagent definitions (done)
 
 **Goal:** the five roles from `assessment.md` Section 3 exist as real,
 usable Claude Code subagents in WhisperFlow's own repo (`.claude/agents/`),
@@ -62,14 +62,23 @@ not just a description in a document.
 - [x] Repo-root `CLAUDE.md` added to WhisperFlow stating where specs/ADRs/
   reports live, the branch-per-task convention, and that no subagent merges
   its own work.
-- [ ] Smoke test: each subagent invoked once, confirmed to respond using
-  only its allowed tools (e.g. `reviewer` cannot be coaxed into editing a
-  file). Subagent discovery is tied to a session's working-directory root,
-  so this has to run from a Claude Code session rooted at `WhisperFlow`
-  itself, not from the planning repo — pending.
+- [x] Smoke test: each subagent invoked once via `claude --agent <name> -p
+  "..."` from a session rooted at `WhisperFlow` (fixed by opening WhisperFlow
+  itself as the VS Code workspace root, per the M2 audit finding). The
+  load-bearing case passed cleanly: `reviewer` refused an edit request,
+  correctly citing that it has no `Write`/`Edit` and that fixing issues is
+  outside its role. `architect` self-reported its exact tool list correctly
+  and additionally declined to produce real output ahead of an approved
+  requirements spec. `analyst`/`developer`/`qa` stayed within their allowed
+  tools in practice but skipped the "list your tools" part of the prompt, so
+  their self-report is missing — a real evidentiary gap, not re-tested
+  since nothing they did indicated overreach.
 
 **Evidence:** all five files + `CLAUDE.md` committed (`WhisperFlow` commit
-`0c346ad`); smoke test result recorded in `decisions.md` once run.
+`0c346ad`); smoke test transcripts recorded in `decisions.md` (2026-09-03,
+"M2 smoke test run"). Reviewer's no-edit restriction independently
+confirmed at runtime; analyst/developer/qa confirmed by absence of overreach
+rather than by their own explicit self-report.
 
 ## M3 — Spec Kit: Constitution + Specify
 

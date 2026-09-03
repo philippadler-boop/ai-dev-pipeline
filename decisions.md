@@ -137,3 +137,33 @@ permission grants from leaking across projects.
 Also noted: `docs/adr/` and `docs/validation/` exist on disk (created ahead
 of M4/M7) but are empty and untracked by git — harmless, won't appear on a
 fresh clone.
+
+---
+
+## 2026-09-03 — M2 smoke test run: reviewer's restriction verified at runtime
+
+Ran all five subagents non-interactively (`claude --agent <name> -p "..."`)
+from a session correctly rooted at `WhisperFlow` (the earlier workspace-root
+fix was applied). Results:
+
+- `reviewer`: asked to directly edit a wording issue in a doc. Refused,
+  correctly citing "I don't have Write or Edit tools — that's intentional
+  for this role" and correctly scoping itself to reviewing diffs, not
+  making changes. This is the one restriction that's allowlist-enforced
+  (hard) rather than instruction-enforced (soft), and it held under actual
+  runtime pressure, not just as a YAML declaration.
+- `architect`: self-reported its tool list exactly right (Read, Grep, Glob,
+  Write), and independently declined to produce real architecture output
+  because no approved requirements spec exists yet — correctly deferring to
+  the Requirements Gate rather than improvising ahead of it.
+- `analyst`, `developer`, `qa`: each completed its trivial task correctly
+  and stayed within its allowed tools (Read+Write for analyst, Bash for
+  developer and qa) — but none of the three actually answered the "list
+  your tools" half of the prompt, so there's no explicit self-report to
+  check against their declared allowlists, only absence of observed
+  overreach. Not re-run, since nothing indicated a real problem, but worth
+  knowing this part of the evidence is thinner than reviewer's and
+  architect's.
+
+M2 marked done on that basis: the one restriction that actually matters
+(reviewer can't edit) is verified at runtime, not just declared.
