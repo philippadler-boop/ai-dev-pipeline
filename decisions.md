@@ -274,3 +274,50 @@ commits `2a0bc65`, `593a38c`; verified via the repo's own
 `.git/logs/refs/remotes/origin/main` reflog, not just the user's report).
 Requirements reviewed and approved as transcription-only v1 — Requirements
 Gate closed (Section 6, Principle II).
+
+---
+
+## 2026-09-04 — M4 corrected before starting: use Spec Kit's native Plan/Tasks chain, not a hand-rolled one
+
+Asked "what about /speckit-clarify and /speckit-plan" while getting ready
+to start M4 — a fair question that, on checking, surfaced a real
+inconsistency rather than a simple answer.
+
+M4 as originally drafted (`architect.md` hand-writes `docs/architecture.md`
++ ADRs, then a manual task list is converted to GitHub Issues by hand)
+directly conflicts with decision 4 ("use GitHub Spec Kit as-is ... rather
+than hand-rolling an equivalent") and with `assessment.md` Section 14's own
+"Recommended V1" text, which already correctly scoped Spec Kit through
+Plan/Tasks with the Architect's ADRs as a structured-template layer on
+top — not a full custom architecture doc. M4 had drifted from both,
+likely because it was drafted before Spec Kit was actually installed and
+its skill set inspected: `.claude/skills/` in WhisperFlow already ships
+`speckit-clarify`, `speckit-plan`, `speckit-tasks`, and
+`speckit-taskstoissues` — the exact chain M4 was about to reinvent by hand.
+
+**Corrected, before any M4 work started:**
+- Design artifacts now come from Spec Kit's native chain — `/speckit.clarify`
+  -> `/speckit.plan` -> `/speckit.tasks` -> `/speckit.taskstoissues` —
+  landing under `specs/001-video-subtitle-generator/` (`plan.md`,
+  `research.md`, `data-model.md`, `contracts/`, `quickstart.md`, `tasks.md`).
+- No separate hand-authored `docs/architecture.md`. `docs/adr/` is kept as
+  a companion layer: `architect.md` writes one ADR per significant call
+  `plan.md` surfaces, per decision 6, but doesn't author the whole design
+  from scratch.
+- `/speckit.clarify` runs before `/speckit.plan`, matching Spec Kit's own
+  recommended order (it warns of increased rework risk if skipped).
+
+Updated: `WhisperFlow/.specify/memory/constitution.md` (Documentation &
+Artifact Structure section rewritten; bumped 1.0.1 -> 1.1.0, MINOR per its
+own governance rule — materially changed guidance, no Core Principle
+touched), `WhisperFlow/CLAUDE.md` ("Where things live" section, and its
+"What this repo is" line corrected to say transcription-only v1 instead of
+repeating the "chosen language" framing we already resolved out of scope),
+`implementation-plan.md`'s M4 (this file). `assessment.md` needed no
+change — Section 14 was already right; only `implementation-plan.md` had
+drifted from it.
+
+**Lesson:** the same "verify before advising" discipline used for the
+FR-/REQ- fix applies here — a milestone written before a tool is actually
+installed needs to be re-checked against what that tool turns out to
+provide, not assumed correct because it was written down first.

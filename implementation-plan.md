@@ -116,21 +116,36 @@ approved as transcription-only v1 — Requirements Gate closed
 
 ## M4 — Architecture + task breakdown
 
-**Goal:** the Design Gate — a real architecture doc, ADRs for the
-non-trivial calls, and a task list that's actually implementable one item
-at a time.
+**Goal:** the Design Gate — via Spec Kit's own Plan/Tasks chain per
+decision 4 (use Spec Kit as-is), not a hand-rolled equivalent. Corrected
+2026-09-04: the version of this milestone below (hand-authoring
+`docs/architecture.md` and manually converting tasks to issues) was found
+to conflict with decision 4 and with `assessment.md` Section 14's own
+"Recommended V1" text once Spec Kit's installed skill set was actually
+inspected — it already ships `/speckit.plan`, `/speckit.tasks`, and
+`/speckit.taskstoissues`, covering exactly what this milestone was about
+to reinvent. See decisions.md.
 
-- Invoke `architect.md` against the approved requirements spec.
-- Output: `docs/architecture.md` plus one ADR per significant decision
-  (transcription engine choice, translation approach, subtitle format,
-  CLI framework) using the structured template (context / decision /
-  alternatives considered / consequences).
-- Convert the task list into GitHub Issues, one per task, each referencing
-  its `FR-xxx` ID in the issue body — this reference is what M5's
+- Run `/speckit.clarify` against the approved spec first (Spec Kit's own
+  recommended order — it's meant to run and complete before `/speckit.plan`,
+  and skipping it raises rework risk per the tool's own instructions).
+- Run `/speckit.plan`: produces `plan.md` (tech stack, project structure,
+  a Constitution Check gate) plus `research.md`, `data-model.md`,
+  `contracts/`, `quickstart.md` under `specs/001-video-subtitle-generator/`.
+- Run `/speckit.tasks`: produces `tasks.md`, a dependency-ordered task
+  breakdown.
+- Invoke `architect.md` to write one ADR per significant decision
+  `plan.md` surfaces (transcription engine choice, subtitle format, CLI
+  framework) into `docs/adr/`, using the structured template (context /
+  decision / alternatives considered / consequences) — a companion to
+  `plan.md`, not a replacement for it. No separate `docs/architecture.md`.
+- Run `/speckit.taskstoissues` to convert `tasks.md` into GitHub Issues,
+  each referencing its `FR-xxx` ID — this reference is what M5's
   traceability check will enforce.
 
-**Evidence:** architecture doc + ADRs committed; every requirement maps to
-at least one issue; you've approved the architecture (Design Gate, human-approved).
+**Evidence:** `plan.md`/`research.md`/`data-model.md`/`tasks.md` +
+ADRs committed; every requirement maps to at least one GitHub Issue;
+you've approved the plan (Design Gate, human-approved).
 
 ## M5 — CI: build, test, lint, security, traceability
 
