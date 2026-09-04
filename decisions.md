@@ -440,3 +440,33 @@ didn't. Verify against the actual files every time, not just this once.
 
 Next: `architect.md` writes ADRs from plan.md/research.md, then
 `/speckit.taskstoissues` converts tasks.md into GitHub Issues.
+
+---
+
+## 2026-09-04 — D1 fixed at the root, for future features
+
+Asked how D1 gets addressed for future features, since the earlier fix
+only patched this one feature's tasks.md/plan.md. Traced where the bad
+text actually came from before answering: not from Spec Kit's own
+templates (checked `tasks-template.md` directly — no branch-related text
+in it at all), but inferred by the model running `/speckit.tasks` from
+`plan.md`'s templated `**Branch**: [###-feature-name]` field, which gets
+populated with a plausible-looking name regardless of whether a real
+branch exists — and none does, since `.specify/extensions.yml` hooks were
+never configured (confirmed via `git branch -a`: only `main`).
+
+Since `/speckit.plan` and `/speckit.tasks` both load `constitution.md`
+before writing that text, fixed it there instead of relying on catching
+this again per-feature: Principle IV (Branch-per-Task, Protected Main)
+now explicitly states this project doesn't use Spec Kit's hook-based
+branch-per-feature model, that a `plan.md` `Branch` field is a template
+placeholder to verify rather than trust, and that branches only enter the
+picture at the implementation-task level (WhisperFlow `4bdff9b`,
+constitution bumped 1.1.0 -> 1.2.0). `CLAUDE.md`'s matching line updated
+too.
+
+This is also the answer for any future second project: the same
+`.specify/extensions.yml`-hooks-not-configured gap will exist there too
+unless deliberately set up otherwise, so a new project's M3-equivalent
+constitution should include the same clarifying paragraph from the start
+rather than waiting to rediscover it via another CRITICAL Analyze finding.
