@@ -228,7 +228,7 @@ Implementation and Test gates real, per Section 6 and Section 11.
   is stale for "latest" as of this project's actual date). Kept current
   going forward by Dependabot's `github-actions` ecosystem entry above.
 
-**Evidence:** shipped via PR `philippadler-boop/WhisperFlow#<PR-number>`
+**Evidence:** shipped via PR `philippadler-boop/WhisperFlow#31`
 (branch `chore/m5-ci-cd-setup`, tracking issue #30), all five checks
 green, merged to `main`. Branch protection confirmed live via the `gh
 api` response (`checks[].app_id: 15368` on all five contexts, matching
