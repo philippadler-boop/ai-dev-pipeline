@@ -352,3 +352,43 @@ rule) and `implementation-plan.md`'s M2 table (architect row corrected to
 match, cross-referencing this entry). No constitution change needed —
 Principle I only names the five roles, it doesn't specify each one's exact
 job.
+
+---
+
+## 2026-09-04 — Clarify/Plan/Tasks closed; Analyze added to M4 before Implement
+
+`/speckit.clarify` and `/speckit.plan` reviewed and committed
+(WhisperFlow `e652071`): Clarify resolved 4 real gaps (max video length
+firmed to 2h, no-resume-on-interrupt behavior, a new progress-indicator
+requirement FR-011, a proportional processing-time target SC-006) with
+zero `[NEEDS CLARIFICATION]` markers left. Plan's `research.md` gives a
+real decision/rationale/alternatives per dependency (faster-whisper,
+ffmpeg subprocess, `srt`, typer+rich); `contracts/cli.md` answered a
+concern raised at Specify time — FR-009/FR-010 (review/edit) is a real
+`--review`/`--no-review` flow via `$EDITOR`, not a vacuous restatement of
+"it's a text file." Constitution Check in `plan.md` passed with no
+violations. Also fixed in passing: no `.gitignore` existed in WhisperFlow;
+added one (Claude Code's own `.claude/settings.local.json` convention,
+plus basic Python hygiene now that the stack is locked in).
+
+`/speckit.tasks` reviewed and committed (`b86dfff`): 27 tasks, organized
+by user story. Verified independently (not from the tool's own completion
+report) that all eleven FRs map to at least one task and the `[P]`/story
+tagging matches the real dependency graph. Two inaccuracies caught in the
+tool's self-reported completion summary: it claimed every task carries an
+inline `FR-xxx` reference (T001–T003 and T008 reference `plan.md`/
+`research.md`/`contracts/cli.md` instead — legitimate for scaffolding/
+contract-surface tasks, but the summary overstated it as universal), and
+it named T025 as one of "two file-path-less sweep tasks" alongside T027,
+when T025 does name an exact file (`scripts/benchmark.py`) — only T027
+genuinely lacks one. Same lesson as the earlier MCP-leak investigation:
+a tool's own summary of its output is not a substitute for reading the
+output.
+
+**M4 gap closed:** the completion report flagged `/speckit.analyze` as an
+optional next step; checked what it does before deciding — a non-
+destructive cross-artifact consistency check across spec/plan/tasks,
+explicitly meant to run after Tasks and before Implement. M4 hadn't
+included it (same category of oversight as the original hand-rolled M4,
+just one step later in the chain). Added it to `implementation-plan.md`'s
+M4, between Tasks and the architect/Tasks-to-Issues steps.

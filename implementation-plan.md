@@ -134,6 +134,12 @@ to reinvent. See decisions.md.
   `contracts/`, `quickstart.md` under `specs/001-video-subtitle-generator/`.
 - Run `/speckit.tasks`: produces `tasks.md`, a dependency-ordered task
   breakdown.
+- Run `/speckit.analyze`: a non-destructive cross-artifact consistency
+  check across `spec.md`/`plan.md`/`tasks.md`, meant to run after Tasks
+  and before Implement (added 2026-09-04 for the same reason Clarify was
+  added before Plan — cheap insurance before the expensive step, and it's
+  Spec Kit's own recommended order, not an optional extra). Resolve any
+  CRITICAL findings before proceeding.
 - Invoke `architect.md` to write one ADR per significant decision
   `plan.md` surfaces (transcription engine choice, subtitle format, CLI
   framework) into `docs/adr/`, using the structured template (context /
@@ -144,8 +150,9 @@ to reinvent. See decisions.md.
   traceability check will enforce.
 
 **Evidence:** `plan.md`/`research.md`/`data-model.md`/`tasks.md` +
-ADRs committed; every requirement maps to at least one GitHub Issue;
-you've approved the plan (Design Gate, human-approved).
+ADRs committed; `/speckit.analyze` run with no unresolved CRITICAL
+findings; every requirement maps to at least one GitHub Issue; you've
+approved the plan (Design Gate, human-approved).
 
 ## M5 — CI: build, test, lint, security, traceability
 
