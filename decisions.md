@@ -392,3 +392,51 @@ explicitly meant to run after Tasks and before Implement. M4 hadn't
 included it (same category of oversight as the original hand-rolled M4,
 just one step later in the chain). Added it to `implementation-plan.md`'s
 M4, between Tasks and the architect/Tasks-to-Issues steps.
+
+---
+
+## 2026-09-04 — M4 Analyze pass: 1 CRITICAL + 5 lower-severity findings, all fixed
+
+`/speckit.analyze` run against spec.md/plan.md/tasks.md, cross-checked
+against the constitution. Report claimed 100% FR coverage, 0 ambiguity,
+0 duplication, 1 critical issue. Spot-checked the CRITICAL finding and
+the four lower ones against the actual files before acting (not taken on
+the report's word alone) — all confirmed real:
+
+- **D1 (CRITICAL)**: tasks.md said task branches are cut "off
+  001-video-subtitle-generator" — but no such branch was ever created
+  (verified: `git branch -a` shows only `main`; no `.specify/extensions.yml`
+  hooks exist to create one). Every Spec Kit artifact has been on `main`
+  directly the whole time. Fixed tasks.md's branching note and plan.md's
+  stale `Branch: 001-video-subtitle-generator` header to reflect reality
+  — simpler than the report's own suggested fix (merge a feature branch
+  that turned out not to exist).
+- **F1/F2 (MEDIUM)**: plan.md's Project Structure comments didn't match
+  where tasks.md actually places things (`src/lib/` described as holding
+  shared types, but only error types land there; review/edit support
+  described under `src/subtitles/`, but T020 puts it in `src/cli/review.py`).
+  Corrected plan.md's comments to match tasks.md, the more specific and
+  already-considered source.
+- **C1 (LOW)**: `scripts/` and `tests/fixtures/` (introduced by T003/T025)
+  were missing from plan.md's Project Structure tree. Added.
+- **E1/E2 (MEDIUM)**: SC-003/SC-004 (accuracy/sync percentages) and
+  SC-002/SC-006 (timing) had measurement but no action-on-result. Extended
+  T025 to report accuracy/sync against a labeled corpus (with an explicit
+  note that SC-003/SC-004 are spec.md's own human-judgment criteria that
+  this anchors, not replaces — qa-owned per Principle V) and added T028,
+  conditional on T025 showing the timing target missed.
+
+All fixes committed to WhisperFlow (`28666de`) as manual edits to
+plan.md/tasks.md, not by re-running `/speckit.plan`/`/speckit.tasks` from
+scratch, per the report's own recommendation. M4's Analyze evidence bar
+("no unresolved CRITICAL findings") is now met.
+
+Also worth noting for future smoke tests: this is a second, independent
+confirmation that a Spec Kit command's own completion report shouldn't be
+taken at face value — the Tasks completion report itself had two minor
+inaccuracies (see the prior entry), and now Analyze's CRITICAL finding
+was real but its own suggested remediation assumed a branch existed that
+didn't. Verify against the actual files every time, not just this once.
+
+Next: `architect.md` writes ADRs from plan.md/research.md, then
+`/speckit.taskstoissues` converts tasks.md into GitHub Issues.
