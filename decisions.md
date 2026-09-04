@@ -856,3 +856,91 @@ nothing was ever pushed -- but worth recording as a reminder that "this is
 just a docs commit, it's fine" is exactly the rationalization that skips
 a gate. Same lesson as the reviewer/qa-after-merge gap earlier today: the
 discipline has to apply uniformly, including to changes I make myself.
+
+## 2026-09-04 -- M8 setup: Claude Code GitHub Action, auth and permission-scope decisions
+
+Starting M8 (turn on unattended work). Decided mechanism: a Claude Code
+GitHub Action (not GitHub Copilot coding agent) -- it reuses the exact
+`developer`/`reviewer`/`qa` subagent definitions already built and proven
+in M7, rather than standing up a second, differently-configured agent
+product. Two setup decisions, both verified against the current official
+docs (code.claude.com/docs/en/github-actions, fetched directly -- a
+research subagent's first pass had fabricated model-ID strings and a
+token price contradicting this document's own Section 13 figures, caught
+and corrected before acting on them, not passed through).
+
+**Auth: CLAUDE_CODE_OAUTH_TOKEN**, not ANTHROPIC_API_KEY. Draws from the
+existing Claude subscription's usage allowance (generated via
+`claude setup-token` locally) rather than opening a second, separately
+metered API-billing relationship. Chosen for simplicity of having one
+billing surface, not because of any cost difference -- at this project's
+scale either option is trivial spend.
+
+**GitHub App scope: the standard shared Claude GitHub App**, installed via
+the guided `/install-github-app` flow -- NOT the fine-grained,
+WhisperFlow-only token that `SECURITY-NOTES.md` (M6) originally called
+for. This is a deliberate, explicit deviation, not an oversight: the
+shared app requests a broad permission set (Actions, Checks, Contents,
+Discussions, Issues, Pull requests, Repository hooks, Workflows -- all
+read-write) because it's shared across every Claude GitHub feature, not
+scoped to just this one action. The alternative -- a custom GitHub App
+with only Contents+Issues+PRs -- would match M6's original policy exactly,
+but requires manually registering an app, generating and storing a
+private key, and more workflow wiring, for a solo hobby account where
+decision 3 already accepted "broader autonomy is acceptable" as the
+starting posture. Trade-off made consciously: convenience and the
+officially-guided setup path, over the narrower scope M6 wrote down.
+`SECURITY-NOTES.md`'s token-policy section will be updated to reflect this
+as the actual implementation, rather than left describing a policy that
+was quietly not followed.
+
+## 2026-09-04 -- M8 closed: unattended pilot verified end-to-end, T002+T003 both landed
+
+Independently re-verified everything in M8's `implementation-plan.md`
+entry before marking it done -- prompted by "check the repo everything for
+M8 is there and more," since the pilot ended up covering two tasks
+(T002, T003) instead of the single one originally planned, and every
+prior "done" claim in this project gets checked against real evidence
+before being written down, not taken on trust, including my own.
+
+**What was checked, and how:**
+- `claude-dev-agent.yml` exists in WhisperFlow with the fixes from both
+  smoke tests still in place (`--allowedTools` matching `developer.md`'s
+  tool list exactly; no `github_token` override) -- read directly off
+  disk via `device_bash`, not assumed from memory of building it.
+- Commit authorship on the T002 (`31cf518`) and T003 (`05c7389`)
+  implementation commits: `git log --format` shows both authored by
+  `claude[bot] <209825114+claude[bot]@users.noreply.github.com>` -- the
+  real GitHub App bot identity, not a human running the CLI locally and
+  calling it unattended. This is the load-bearing piece of evidence for
+  the whole milestone: everything else (a green PR, a merged label) could
+  in principle be produced by a human; this couldn't.
+- `tasks.md` shows T002 and T003 both checked off (`grep` against the
+  file, not a description of it).
+- `docs/validation/T002.md` and `T003.md` read directly: both show real
+  independent `qa` work, not a rubber stamp -- T002 built a fresh
+  disposable virtualenv and ran actual `pip install -e ".[dev]"` plus
+  `ruff`/`pytest`; T003 probed the fixture videos with a local
+  `ffmpeg`/`ffprobe` install. Reviewer findings are real too: T002 got a
+  genuine catch (unsourced `license` field in `pyproject.toml`, fixed
+  before merge); T003 approved clean but the pilot run itself caught a
+  real CI bug (`ffmpeg` missing from the `test` job's `PATH`), fixed
+  before merging.
+- Full PR merge state for the milestone, from `gh pr list --json
+  number,title,state,mergedAt` run in the user's own terminal (this
+  device's shell has no `gh` install and no GitHub credentials, so this
+  step couldn't be done independently from here -- had to ask and read
+  the actual output rather than accept a summary of it): #47, #49, #52,
+  #53, #54, #55, #56 all `MERGED`; #51 (the second smoke test) correctly
+  `CLOSED` without merging, exactly as a throwaway smoke test should be.
+
+**Not yet confirmed:** whether the throwaway smoke-test issues themselves
+(#48, #50) were closed/tidied in WhisperFlow's issue tracker -- only PR
+#51's closed state was checked, not the issues that triggered it. Minor
+either way (they're smoke-test scaffolding, not pipeline evidence), but
+noting the gap rather than quietly treating it as checked.
+
+M8 marked done in `implementation-plan.md`, with the full setup story
+(auth/scope decisions, the two smoke-test failures and fixes, the T002/T003
+evidence) written into that section rather than just a checkbox. Next:
+M9 -- retro and adjust.

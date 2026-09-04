@@ -380,7 +380,7 @@ reviewer's approval report (full text, not summarized, reviewed 2026-09-04),
 sub-requirements, committed in `b4107b4`), and this process-gap note. Full
 narrative in decisions.md, 2026-09-04 entries.
 
-## M8 — Turn on unattended work (per decision 3)
+## M8 — Turn on unattended work (per decision 3) (done)
 
 **Goal:** now that the gates are proven under supervision (M7), extend
 autonomy to unattended execution for a narrow, low-risk task category —
@@ -389,16 +389,70 @@ gets exercised, deliberately sequenced *after* M7 rather than from day one,
 so the first thing running unattended is a pipeline you've already watched
 work correctly once.
 
-- Enable GitHub Copilot coding agent (or configure a Claude Code GitHub
-  Action) on the WhisperFlow repo.
-- Assign it one small, well-scoped issue (still something low-risk — not
-  the first real feature).
-- Confirm it produces a PR that still has to pass M5's gates and M7's
-  review/validation loop like everything else — unattended execution changes
-  *who* starts the work, not which gates it has to clear.
+- [x] Chose the Claude Code GitHub Action over GitHub Copilot coding agent
+  (issue #43) — reuses the exact `developer`/`reviewer`/`qa` subagent
+  definitions already proven in M7 rather than standing up a second,
+  differently-configured agent product. Authenticated via
+  `CLAUDE_CODE_OAUTH_TOKEN` (subscription allowance, one billing surface)
+  installed through the guided `/install-github-app` flow. Deliberately
+  used the shared Claude GitHub App rather than the fine-grained,
+  WhisperFlow-only PAT M6 originally specified — a conscious deviation,
+  reasoned through and logged (2026-09-04 decisions.md entries), with
+  `SECURITY-NOTES.md` updated to describe what was actually implemented
+  rather than left describing an unfollowed policy. `SECURITY-NOTES.md`
+  update went through its own PR (#44) rather than a direct commit —
+  learned the hard way earlier in M7 after I mistakenly committed straight
+  to `main` once.
+- [x] Built `.github/workflows/claude-dev-agent.yml` (PR #47) as a
+  *separate* workflow from the `/install-github-app`-generated `claude.yml`
+  — `claude.yml` stays the interactive `@claude`-mention workflow;
+  `claude-dev-agent.yml` triggers in automation mode (a `prompt` input) on
+  an issue getting the `claude-dev` label, invoking `--agent developer` via
+  `claude_args`. No `github_token` override (required for the Action's
+  commits to actually trigger downstream CI — a default `GITHUB_TOKEN`
+  silently wouldn't) and deliberately no auto-merge step: the PR it
+  produces has to clear the same gates as every other PR (CI, `reviewer`,
+  `qa`, human merge).
+- [x] First smoke-test run (throwaway issue #48) failed silently —
+  completed with exit success and zero visible errors, but produced no
+  branch/commit/PR, `permission_denials_count: 20` in the result JSON.
+  Root cause, found from actual evidence not guessing: automation mode
+  grants Claude no shell/GitHub tool access at all until explicitly
+  allowed. Fixed (PR #49) by adding `--allowedTools "Bash,Edit,Write,Read,
+  Grep,Glob"` — deliberately mirroring `developer.md`'s own `tools:` line
+  exactly, so the unattended run gets no more access than the subagent
+  already has interactively. Second smoke test (throwaway issue #50)
+  confirmed the fix and, with `show_full_output: true` turned on,
+  independently confirmed `--agent developer` was genuinely loading
+  `developer.md`'s config (the session's own "init" event reported
+  exactly developer.md's five-tool list, not the default Claude Code
+  toolset) — closed without merging (PR #51), as a smoke test should be.
+- [x] Real pilot: T002 (`pyproject.toml`) and T003 (`tests/conftest.py`)
+  from `tasks.md`, each picked up unattended via the `claude-dev` label.
+  Both implementation commits are authored by `claude[bot]
+  <209825114+claude[bot]@users.noreply.github.com>` — the actual GitHub
+  App bot identity, independently confirmed via `git log --format`, not
+  self-reported — real evidence the trigger fired rather than a human
+  running the CLI by hand and calling it unattended.
+- [x] Both went through the exact same gates as M7: CI green (`gh pr
+  checks`, independently verified), `reviewer` caught a real issue on
+  T002 (an unsourced `license` field in `pyproject.toml`, fixed before
+  merge) and approved T003 clean, `qa` independently re-verified both —
+  T002 by building a fresh disposable virtualenv and running a real `pip
+  install -e ".[dev]"` plus `ruff`/`pytest`, T003 by probing the fixture
+  videos directly with a local `ffmpeg`/`ffprobe` install — neither
+  trusted CI or the reviewer's word alone. T003 also caught and fixed a
+  real CI failure (`ffmpeg` missing from the `test` job's `PATH`) before
+  merging. A human merged both (PRs #53/#54 for T002, #55/#56 for T003,
+  all independently confirmed `MERGED` via `gh pr list --json`).
 
-**Evidence:** an unattended-agent-authored PR that passed the same gates as
-M7's, merged the same way.
+**Evidence:** two unattended-agent-authored PRs (T002, T003), both
+independently confirmed `claude[bot]`-authored, both passing the identical
+CI/reviewer/qa/human-merge gate sequence M7 proved out, plus a documented
+smoke-test failure and fix showing the setup was actually debugged from
+real evidence (`permission_denials_count`, actual init-event tool lists)
+rather than assumed correct. `docs/validation/T002.md` and
+`docs/validation/T003.md` in WhisperFlow carry the full qa evidence.
 
 ## M9 — Retro and adjust
 
