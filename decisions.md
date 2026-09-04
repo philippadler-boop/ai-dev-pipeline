@@ -672,3 +672,43 @@ github.com -s workflow`.
 
 M5 marked done in `implementation-plan.md`. Next: M6 (security baseline)
 before M7's first real implementation task.
+
+---
+
+## 2026-09-04 — M6 closed: credential deny-list, sandbox/token/container decisions documented
+
+Before writing config, verified Claude Code's actual current permission/
+sandbox mechanics via `claude-code-guide` rather than assuming from
+training data (this session's own knowledge of Claude Code's settings
+schema predates whatever version is current) — confirmed `permissions.deny`
+syntax, that a `Read` deny also blocks `Edit`/`Write` on the same path
+(>= v2.1.228), and the existence and platform limits of the separate
+`sandbox.enabled` Bash-sandbox feature.
+
+Shipped to WhisperFlow (`.claude/settings.json` + new `SECURITY-NOTES.md`,
+PR #37, tracking issue #36): a `permissions.deny` credential list
+(`~/.ssh`, `~/.aws`, `~/.gnupg`, gh's own config, `.netrc`, docker/npm
+config, any `.env*`) that applies to every session in this repo regardless
+of platform or whether it's interactive or unattended.
+
+Explicitly decided *not* to enable Claude Code's stricter OS-level Bash
+sandbox yet, rather than defaulting either way silently — asked Philipp
+directly since it's a real trade-off (macOS/Linux/WSL2 only, restricts
+Bash writes to working-dir/temp/added-dirs, real friction risk on daily
+interactive use) with no dominant answer. Decision: document it as an
+available step-up in `SECURITY-NOTES.md`, don't enable now — matches
+assessment.md's own "ladder, not a switch" framing, and GitHub Actions'
+per-run VM isolation already covers M8's actual unattended execution
+environment, so the gap this would close doesn't exist yet in practice.
+
+Also documented, as policy rather than action: the GitHub token scope
+required once M8 needs one (fine-grained PAT, WhisperFlow-only, Contents +
+PRs + Issues, nothing org-wide) — not created yet since nothing needs it
+until M8 starts, and the container-boundary decision (GitHub Actions' own
+VM is sufficient for M8; no devcontainer unless unattended work ever runs
+locally instead).
+
+M6 marked done in `implementation-plan.md`. Next: M7 — first end-to-end
+task, supervised (pick the smallest task from `tasks.md`, prove
+Developer -> CI -> Reviewer -> QA -> human merge works before trusting the
+loop with anything real).

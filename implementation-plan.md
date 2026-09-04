@@ -260,25 +260,52 @@ requirement blocked the first attempt to merge any PR touching
 `.github/workflows/*` (fixed via `gh auth refresh -h github.com -s
 workflow`).
 
-## M6 — Security baseline
+## M6 — Security baseline (done)
 
 **Goal:** the stricter posture decision 7 calls for, done now rather than
 deferred, since decision 3 accepted broader unattended autonomy.
 
-- Configure Claude Code's sandbox credential deny-list (`~/.ssh`,
-  `~/.aws/credentials`, and equivalents) for any session working in this repo.
-- Scrub sensitive environment variables from any context the `developer`
-  or unattended agents' Bash tool can see.
-- Create a repo-scoped GitHub token (or GitHub App installation limited to
-  WhisperFlow) for any automation — never an org-wide or account-wide token.
-- Decide the container boundary for unattended work (M8 uses GitHub
-  Actions' own sandboxing by default, which already satisfies this; a
-  devcontainer is only needed if you also want unattended work runnable
-  locally).
+- [x] Configure Claude Code's credential deny-list (`~/.ssh`,
+  `~/.aws/credentials`, and equivalents) for any session working in this
+  repo: `.claude/settings.json`'s `permissions.deny` (Read, which per
+  Claude Code >= v2.1.228 also blocks Edit/Write on the same path),
+  applies on every platform regardless of session type. Verified against
+  Claude Code's own current docs (permissions/sandboxing/security pages)
+  via `claude-code-guide`, not assumed from training data — including the
+  real caveat that a `Read` deny doesn't stop an arbitrary Bash
+  subprocess from opening a file itself; only OS-level sandboxing closes
+  that gap.
+- [x] Decided, deliberately, **not** to enable Claude Code's stricter
+  OS-level Bash sandbox (`sandbox.enabled`) yet — documented in
+  `SECURITY-NOTES.md` rather than silently skipped: it's macOS/Linux/WSL2
+  only (no native Windows), restricts Bash writes to
+  working-dir/temp/added-dirs (real friction risk on everyday interactive
+  work), and per assessment.md's own "ladder, not a switch" framing,
+  isn't needed until unattended work might run outside GitHub Actions'
+  own VM isolation. Revisit then.
+- [x] GitHub token scope for future unattended automation (M8): documented
+  policy in `SECURITY-NOTES.md` — a fine-grained PAT scoped to WhisperFlow
+  only, Contents + Pull requests + Issues (read/write), nothing org-wide.
+  Not yet created, since M8 hasn't started and there's nothing to scope it
+  for yet — this is the decided policy, applied when M8 actually needs a
+  token, per decision 7's "set up as part of V1" without inventing an
+  unused credential today.
+- [x] Container boundary for unattended work: GitHub Actions' own per-run
+  VM isolation accepted as sufficient for M8 (documented in
+  `SECURITY-NOTES.md`); no devcontainer unless unattended work is ever run
+  locally instead.
+- Environment-variable scrubbing: no `.env`/secret lives in this repo or
+  is needed for WhisperFlow itself (FR-004, no network calls), so there's
+  nothing repo-specific to scrub today. `SECURITY-NOTES.md` documents this
+  plainly and flags — rather than glossing over — that the exact mechanics
+  of Claude Code's env-var masking/`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB`
+  weren't fully confirmed from current docs, so it isn't presented as a
+  settled guarantee.
 
-**Evidence:** a documented (one paragraph in this repo's `CLAUDE.md` or a
-short `SECURITY-NOTES.md`) statement of what's denied and what token scope
-is in use — something you can point to later rather than trusting memory.
+**Evidence:** `SECURITY-NOTES.md` (WhisperFlow, merged via PR #37,
+tracking issue #36) — what's denied, why the stricter sandbox isn't
+enabled yet, the token-scope policy, and the container-boundary decision,
+all in one place to point to later rather than trusting memory.
 
 ## M7 — First end-to-end task (supervised)
 
