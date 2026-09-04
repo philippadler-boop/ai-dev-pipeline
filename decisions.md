@@ -769,3 +769,73 @@ Philipp's own Code session applied this fix directly (branch
 `actions: read`-only fix suggested first -- correctly recognizing the
 GHAS gate was the deeper, separate problem underneath the permissions
 error.
+
+## 2026-09-04 -- M7 closed: pipeline proven end-to-end, one real process gap found
+
+PR #38 (T001: project structure scaffolding) is merged (`0fb26b9`), CI
+fully green, `reviewer` approved, `qa` validated (PASS) -- full detail in
+implementation-plan.md's M7 section. Two things worth recording here that
+aren't just "it worked":
+
+**The CI/CodeQL fixes above (PR #39, #40) were the first real test of the
+CI/CD stack under load.** Every previous PR either had zero tracked `.py`
+files (so CodeQL's `init`/`analyze` were skipped) or an empty `tests/`
+directory that never got exercised by a real test run. T001 was the first
+PR to create actual tracked files in both places, and it immediately
+surfaced two more real bugs (pytest exit-5 on zero collected tests; the
+missing `actions: read` permission CodeQL's own telemetry call needs) on
+top of the GHAS/upload gap found in the same PR. None of these would have
+been caught by a design review of `ci.yml`/`codeql.yml` -- all four
+(traceability's two bugs in M5, plus these two, plus GHAS) only surfaced
+by actually running the pipeline against real content. That's the
+strongest evidence yet for this project's whole "evidence over self-report"
+discipline: every one of these was found by reading actual CI/log output,
+never by trusting a green checkmark or a description of what the workflow
+was supposed to do.
+
+**Process gap: PR #38 merged before `reviewer`/`qa` ever ran.** The
+M7 plan was Developer -> CI -> Reviewer -> QA -> human merge, specifically
+so a human's merge decision would be informed by an actual review report
+and validation report, not just a green CI run. In practice, once all 5
+CI checks went green, the PR got merged straight away -- CI-green was
+treated as sufficient in the moment, and the review/QA step was skipped
+entirely for this first task. I caught this only because I cross-checked
+the merge commit against the milestone's plan and asked directly rather
+than assuming the described sequence had happened.
+
+Decision, discussed and agreed: run `reviewer` and `qa` retroactively
+against the already-merged commit, both to get real evidence that those
+two subagents work correctly (they do -- see below) and to have an
+honest record that this was a post-hoc check, not the actual gate. This
+is NOT being counted as equivalent to a real pre-merge review -- a gate
+that runs after the decision it's supposed to inform is not a gate.
+Going forward (T002+), "merge only after reviewer approval AND a passing
+qa validation report both exist" is an explicit rule to follow
+consciously, not something to assume happens because the milestone plan
+says so. Worth revisiting later whether this can be enforced structurally
+(e.g., a required PR review from a bot account, or a required status
+check keyed to the qa report's existence) rather than relying on memory
+each time -- deferred for now since M7's job was just to prove the agents
+themselves work, which they did.
+
+**Retroactive review/QA results, for the record:**
+- `reviewer` (fresh `claude --agent reviewer` invocation, isolated from
+  the developer's conversation): could not run `gh pr diff` directly (no
+  shell/gh tool in that context) and disclosed the substitution plainly --
+  verified against on-disk tree state at the merge commit instead, which
+  is valid since no later commit touched `src/`/`tests/`/`scripts/`.
+  Approved: structure matches `plan.md`'s tree exactly, all 9 required
+  `__init__.py` files present and correctly empty, `scripts/.gitkeep`
+  correctly used instead of `__init__.py` (not a Python package), nothing
+  extra or missing.
+- `qa` (fresh `claude --agent qa` invocation): ran `find`, `git ls-files
+  --error-unmatch` per file (catches untracked/gitignored files a plain
+  `ls` would miss), `git show --stat`/`--name-status` on the merge commit,
+  and cross-checked `plan.md` against `tasks.md` for drift. Wrote
+  `docs/validation/T001.md` (committed `b4107b4`). PASS on all 5
+  sub-requirements. Explicitly did not trust CI or the reviewer's report
+  as evidence on their own, per its own instructions.
+
+M7 marked done in `implementation-plan.md`. Next: M8 -- turn on
+unattended work (per decision 3), now that the supervised loop has been
+proven end-to-end once, gap included.

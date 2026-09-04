@@ -325,28 +325,60 @@ tracking issue #36) — what's denied, why the stricter sandbox isn't
 enabled yet, the token-scope policy, and the container-boundary decision,
 all in one place to point to later rather than trusting memory.
 
-## M7 — First end-to-end task (supervised)
+## M7 — First end-to-end task (supervised) (done)
 
 **Goal:** prove the whole loop — Developer → CI → Reviewer → QA → human
 merge — works on one deliberately small, low-risk task before trusting it
-with anything real. Pick the smallest task from M4's breakdown (e.g., "CLI
-skeleton that accepts a video file path and prints its detected duration"
-— exercises the toolchain without touching transcription/translation yet).
+with anything real. Picked T001 from `tasks.md` (project structure
+scaffolding: `src/`/`tests/` subdirectories + `__init__.py` files,
+`scripts/`) — smaller than the CLI-skeleton example originally sketched
+here, but the right size for a first run: pure filesystem structure, zero
+logic, so any pipeline failure would be about the *process*, not the code.
 
-- `developer.md` implements on a feature branch, opens a PR referencing its
-  REQ/issue ID.
-- CI runs (M5); must be green.
-- `reviewer.md` reviews the diff in an isolated context (it has not seen
-  the developer's reasoning, only the diff and the spec) and produces a
-  review report.
-- `qa.md` maps the requirement to evidence (does the CLI actually print a
-  duration for a real sample file?) and produces a validation report.
-- You merge.
+- [x] `developer` implemented on branch `001/T001-project-structure`,
+  opened PR #38 ("T001: Create project structure (#1)"), referencing
+  issue #1.
+- [x] CI ran and found two real bugs live, not in review: `CI/test`
+  failed with pytest exit code 5 ("no tests collected") once T001 created
+  an empty `tests/` tree, and `CodeQL/codeql` failed with a permissions
+  error (`Resource not accessible by integration`) on its first real run
+  against tracked `.py` files — every earlier PR had zero `.py` files, so
+  `init`/`analyze` had always been skipped before this. Both root-caused
+  from actual `gh run view --log-failed` output. Fixed across two more
+  PRs (#39 for the two CI bugs, #40 once the CodeQL fix surfaced the
+  deeper GHAS/private-repo gap — see the 2026-09-04 decisions.md entry).
+- [x] `reviewer` reviewed the (by then merged) diff in an isolated
+  session — fresh `claude --agent reviewer` invocation, no access to the
+  developer's conversation, working only from the diff/on-disk state, the
+  task spec, and `plan.md`'s target tree. **Approved**, structure matched
+  `plan.md` exactly, all 9 required `__init__.py` files present.
+- [x] `qa` independently re-verified via `git ls-files`/`git show` against
+  the actual merge commit (not trusting CI or the review) and wrote
+  `docs/validation/T001.md`. **PASS** on all 5 sub-requirements checked.
+- [x] Merged (commit `0fb26b9` on `main`).
 
-**Evidence:** one merged PR with a full trail — CI run, review report,
-validation report, all linked from the PR — that you can point to as "this
-is what the pipeline actually produces," not a description of what it's
-supposed to produce.
+**Process gap found and worth naming honestly:** PR #38 was merged as
+soon as CI went green, *before* `reviewer`/`qa` ever ran — the human-merge
+step in this loop didn't actually wait on the review/QA gate the way this
+milestone was designed to prove out. Caught when I cross-checked the merge
+commit against the plan and asked; `reviewer`/`qa` were then run
+retroactively against the already-merged commit, which is a legitimate
+post-hoc content check but not the real gate this milestone exists to
+prove — a real gate has to run *before* merge is possible, not after.
+Both agents' output was fully independent and correct regardless (see
+evidence below), so the *agents* are proven to work; what's proven weaker
+is that a human reliably waits for them. Decision: for T002 onward,
+merging before both `reviewer` approval and a passing `qa` validation
+report exist is an explicit rule, not an assumed one — worth eventually
+also enforcing as a required PR review/status check the way CI already is,
+rather than relying on memory each time.
+
+**Evidence:** PR #38 (merged, all 5 CI checks green per `gh pr checks 38`:
+`CI/build`, `CI/lint`, `CI/test`, `CodeQL/codeql`, `Traceability/traceability`),
+reviewer's approval report (full text, not summarized, reviewed 2026-09-04),
+`docs/validation/T001.md` (qa's validation report, PASS on all 5
+sub-requirements, committed in `b4107b4`), and this process-gap note. Full
+narrative in decisions.md, 2026-09-04 entries.
 
 ## M8 — Turn on unattended work (per decision 3)
 
