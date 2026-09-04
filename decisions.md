@@ -578,3 +578,49 @@ Next: M5 — CI (build/test/lint), Dependabot + code scanning, the
 FR-/issue-ID traceability check, updated branch protection, and pinning
 third-party Actions to a SHA — must all exist before M7's first real
 implementation task.
+
+---
+
+## 2026-09-04 — M5 shipped: CI, CodeQL, Dependabot, traceability, branch protection
+
+Built on `chore/m5-ci-cd-setup` (WhisperFlow), PR against tracking issue
+#30: `ci.yml` (build/lint/test), `codeql.yml`, `traceability.yml`,
+`dependabot.yml`. Third-party Actions pinned to commit SHA (Section 12)
+using SHAs pulled live via `git ls-remote` against the real upstream
+repos rather than guessed from training data — this session's knowledge
+of "latest" release tags is stale relative to the project's actual date,
+so verifying rather than assuming mattered here too, same discipline as
+everywhere else this project applies it.
+
+Two real bugs caught before merge, not after:
+
+- **CodeQL's `finalize` step failed fatally** (exit 32, "no source code
+  seen during build") on the empty pre-T001 repo — different failure
+  mode than `ci.yml`'s jobs, which were written to no-op gracefully on
+  the same "no code yet" condition. `ci.yml` controls its own shell
+  logic; `codeql-action`'s `init`/`analyze` steps are opaque, so the fix
+  was a `git ls-files '*.py'` check exposed via `$GITHUB_OUTPUT`, gating
+  those two steps behind `if: steps.check.outputs.has_python == 'true'`
+  — same three-piece pattern (detect / expose via output / gate with
+  `if:`) as `ci.yml`, not a one-off workaround.
+- Considered and rejected a `dummy.py` placeholder as the fix: simpler
+  YAML, but it's fake content with no written-down cleanup step —
+  exactly the "someone has to remember to do X later" shape this project
+  has repeatedly tripped on (D1's phantom branch, the constitution
+  branch-model reversal). The check-and-skip approach self-resolves the
+  moment T001 lands a real `.py` file; nothing to track or forget.
+
+Branch protection updated last (`gh api PUT branches/main/protection`)
+requiring all five checks plus `strict: true`, preserving M1's existing
+review/force-push/deletion settings — confirmed live via the response
+body itself (`checks[].app_id: 15368` against all five contexts), not
+just assumed from the command having exited 0.
+
+Also captured a standing instruction from Philipp: when fixing something
+going forward, explain what broke and why in enough depth that he can
+reproduce the fix himself, not just apply it silently.
+
+Still open before M5 fully closes: the negative-test evidence
+`implementation-plan.md` calls for (a non-referencing throwaway PR
+observed to be blocked by `traceability.yml`). Next after that: M6
+(security baseline) before M7's first real implementation task.

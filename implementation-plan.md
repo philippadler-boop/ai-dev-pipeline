@@ -198,22 +198,46 @@ human-approved). M4 closed 2026-09-04.
 **Goal:** the objective, non-agent-controlled evidence layer that makes the
 Implementation and Test gates real, per Section 6 and Section 11.
 
-- One GitHub Actions workflow, triggered on PR: build, run tests, lint.
-- Enable Dependabot (alerts + security updates) and GitHub code scanning —
-  both free, both configured once.
-- Add a traceability check: a small script that fails the workflow if the
-  PR body/title doesn't reference a `FR-` or issue number. This is
-  required per decision 5, not optional, because unattended agents (M8)
-  won't self-police that link the way a human would.
-- Update `main`'s branch protection to require these checks before merge
-  (completing what M1 left open).
-- Pin any third-party Actions used in the workflow to a commit SHA, not a
-  floating tag (Section 12).
+- [x] One GitHub Actions workflow (`.github/workflows/ci.yml`), triggered
+  on PR and push to `main`: three jobs, `build`/`lint`/`test`. Each job
+  detects whether there's anything to build/test yet (`pyproject.toml`,
+  `tests/`) and no-ops cleanly before T001/T002 land, rather than failing
+  on a repo that doesn't have code yet.
+- [x] Enable Dependabot: `.github/dependabot.yml` (`pip` + `github-actions`
+  ecosystems, weekly) plus the two account-level toggles (vulnerability
+  alerts, automated security fixes) via `gh api -X PUT
+  repos/.../vulnerability-alerts` and `.../automated-security-fixes`.
+- [x] GitHub code scanning: `.github/workflows/codeql.yml`, Python,
+  PR/push + weekly cron. Same "nothing to scan yet" problem as `ci.yml`,
+  but a different failure mode — CodeQL's `finalize` step exits fatally
+  (code 32) on zero source files instead of no-op'ing, so it needed an
+  explicit `git ls-files '*.py'` check gating `init`/`analyze` behind a
+  step output, not just a shell conditional inside one step.
+- [x] Traceability check: `.github/workflows/traceability.yml` fails the
+  PR if `github.event.pull_request.title`/`.body` don't match
+  `FR-[0-9]{3,}` or `#[0-9]+`, per decision 5.
+- [x] `main`'s branch protection updated (`gh api PUT
+  branches/main/protection`) to require all five checks
+  (`build`/`lint`/`test`/`codeql`/`traceability`), `strict: true`
+  (branch must be up to date before merge) — preserves M1's existing
+  0-required-approvals / no-force-push / no-branch-deletion settings.
+- [x] Third-party Actions pinned to commit SHA, not a floating tag
+  (Section 12): `actions/checkout@v7.0.1`, `actions/setup-python@v7.0.0`,
+  `github/codeql-action@v4.37.0` — SHAs confirmed via `git ls-remote`
+  against the real upstream repos, not assumed from training data (which
+  is stale for "latest" as of this project's actual date). Kept current
+  going forward by Dependabot's `github-actions` ecosystem entry above.
 
-**Evidence:** a throwaway PR (e.g., a one-line README fix, deliberately
-*not* referencing a REQ ID) is opened and observed to be blocked by the
-traceability check — proving the gate actually gates before any real code
-depends on it. A second PR that does reference a REQ ID passes.
+**Evidence:** shipped via PR `philippadler-boop/WhisperFlow#<PR-number>`
+(branch `chore/m5-ci-cd-setup`, tracking issue #30), all five checks
+green, merged to `main`. Branch protection confirmed live via the `gh
+api` response (`checks[].app_id: 15368` on all five contexts, matching
+the GitHub Actions app). **Still open:** a throwaway PR (e.g., a one-line
+README fix, deliberately *not* referencing an `FR-` ID or issue) opened
+and observed to be blocked by the traceability check, then closed
+without merging — proves the gate actually gates before any real code
+depends on it, not just that it passed once on a PR that happened to
+reference one.
 
 ## M6 — Security baseline
 
