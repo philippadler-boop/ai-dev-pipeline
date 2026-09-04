@@ -321,3 +321,34 @@ drifted from it.
 FR-/REQ- fix applies here — a milestone written before a tool is actually
 installed needs to be re-checked against what that tool turns out to
 provide, not assumed correct because it was written down first.
+
+---
+
+## 2026-09-04 — architect role narrowed, not removed
+
+Asked whether `architect` should be removed now that M4 routes design work
+through Spec Kit's native Plan/Tasks chain instead of a hand-authored
+architecture doc. Checked before answering: `/speckit.plan`,
+`/speckit.tasks`, and `/speckit.taskstoissues` each start by running a
+PowerShell setup script (`.specify/scripts/powershell/*.ps1`), which needs
+a shell tool — `architect.md`'s allowlist (`Read, Grep, Glob, Write`, no
+`Bash`) genuinely cannot run them. Confirms those commands were always
+meant to run in the interactive session, not via a subagent.
+
+Decision: keep `architect`, narrowed to what's actually left — reading
+Spec Kit's `plan.md`/`research.md`/`data-model.md` after `/speckit.plan`
+runs, and writing one ADR per significant decision into `docs/adr/`
+(decision 6's structured template). Removing the role outright would mean
+amending Principle I (Subagent Separation of Powers), which names all five
+roles explicitly — a MAJOR constitution bump for redefining a Core
+Principle — and the justification isn't there: ADR-writing is real,
+ongoing work that still needs an owner, and keeping it isolated to
+Read+Write (no Bash, no Edit) is a genuine, cheap safety property.
+
+Updated `WhisperFlow/.claude/agents/architect.md` (description, tools
+unchanged, responsibilities rewritten to drop `docs/architecture.md` and
+task-breakdown, explicit "you don't run Spec Kit slash commands" hard
+rule) and `implementation-plan.md`'s M2 table (architect row corrected to
+match, cross-referencing this entry). No constitution change needed —
+Principle I only names the five roles, it doesn't specify each one's exact
+job.

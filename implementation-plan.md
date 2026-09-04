@@ -52,7 +52,7 @@ not just a description in a document.
 | File | Tools (allowlist) | Notes |
 |---|---|---|
 | `analyst.md` | Read, Grep, Glob, Write, WebSearch | Writes concept/requirements docs; no code access |
-| `architect.md` | Read, Grep, Glob, Write | Writes architecture doc + ADRs (structured template, per decision 6); no code edits |
+| `architect.md` | Read, Grep, Glob, Write | Writes ADRs (structured template, per decision 6) from Spec Kit's Plan-phase output (`plan.md`/`research.md`/`data-model.md`); no `docs/architecture.md`, no task breakdown (that's `/speckit.tasks`), no code edits, no shell — corrected 2026-09-04, see decisions.md |
 | `developer.md` | Read, Edit, Write, Bash, Grep, Glob | Implements on a feature branch; Bash needed for running builds/tests/git |
 | `reviewer.md` | Read, Grep, Glob | **No Write/Edit** — this is deliberate (Section 3): a reviewer that can fix what it's reviewing isn't an independent review |
 | `qa.md` | Read, Bash, Grep, Glob, Write (validation report only) | Runs tests/build to gather evidence; writes the requirement → evidence validation report |
