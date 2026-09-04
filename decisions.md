@@ -217,3 +217,60 @@ cannot. Default to the invocation form going forward.
 This closes the M2 smoke-test evidence gap more thoroughly than originally
 planned: every subagent's tool boundary was confirmed by actual runtime
 behavior, not declaration alone.
+
+---
+
+## 2026-09-04 — M3 complete: Constitution + Specify, requirements approved
+
+Spec Kit installed in WhisperFlow (`specify init --here --force --non-interactive
+--integration claude`) and run through both phases:
+
+- **Constitution** (`WhisperFlow/.specify/memory/constitution.md`, v1.0.1):
+  five principles — Subagent Separation of Powers, Two Human Approval Gates,
+  Requirement Traceability, Branch-per-Task/Protected Main, Evidence-Based
+  Validation — all directly derived from decisions already logged here and
+  from the existing `.claude/agents/*`/`CLAUDE.md`, not invented fresh.
+- **Specify** (`WhisperFlow/specs/001-video-subtitle-generator/spec.md`):
+  resolves all seven open questions from `docs/ideas/initial-idea.md` —
+  CLI-only for v1, local/on-device transcription only (no cloud
+  transmission), `.srt` as the sole output format, and, after an explicit
+  re-check (see below), **transcription-only for v1 with translation
+  deferred as a fast-follow**. Zero `[NEEDS CLARIFICATION]` markers remain
+  (verified directly with `grep`, not by trusting the checklist).
+
+**Requirements-ID convention corrected:** the constitution and this plan
+originally specified `REQ-001`, `REQ-002`, ... but Spec Kit's own
+`spec-template.md` hardcodes the `FR-` (Functional Requirement) prefix —
+confirmed by inspecting the template directly, not assumed. Rather than
+fight the tool on every future spec, adopted `FR-` as the project-wide
+convention: constitution bumped to v1.0.1 (PATCH — wording/ID-format only,
+no rule changed) with a proper Sync Impact Report entry, and `CLAUDE.md`/
+`implementation-plan.md`/`assessment.md`/the four agent files updated to
+match. This also would have silently broken M5's planned traceability
+check, which was written to look for a `REQ-` pattern that Spec Kit never
+actually produces — caught now, before that check exists, rather than
+after it started failing every PR.
+
+**Scope check-in, then reversed back:** during review, flagged that the
+spec fully defers translation — not just leaves it open — which drops the
+"chosen language" half of WhisperFlow's own one-line description from v1
+entirely. Decision was briefly to route translation back into v1 via a
+`/speckit.specify` amendment; on reflection, reversed — **v1 stays
+transcription-only**. Rationale: the point of WhisperFlow as the pilot is
+exercising the pipeline's own machinery (gates, CI, subagents, traceability)
+on real-but-small requirements, not maximizing feature scope; adding
+translation now would grow the pilot rather than prove the pipeline.
+Translation remains a fast-follow after the core loop (M7/M8) is proven.
+
+Also found and fixed in passing: the entire Spec Kit installation
+(`.specify/templates/`, `.specify/scripts/`, `.specify/workflows/`,
+`.claude/skills/speckit-*`, integration manifests) had never been
+committed — only its output was. Committed separately so a fresh clone of
+WhisperFlow has Spec Kit itself, not just what it produced.
+
+**Evidence:** `specs/001-video-subtitle-generator/spec.md` +
+`checklists/requirements.md` committed and pushed to `main` (WhisperFlow
+commits `2a0bc65`, `593a38c`; verified via the repo's own
+`.git/logs/refs/remotes/origin/main` reflog, not just the user's report).
+Requirements reviewed and approved as transcription-only v1 — Requirements
+Gate closed (Section 6, Principle II).

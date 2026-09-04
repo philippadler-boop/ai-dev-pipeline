@@ -87,27 +87,32 @@ resolved: it was a self-report artifact (conflating injected MCP server
 instructions with an actual tool grant), not a real allowlist gap — see
 decisions.md for the full investigation.
 
-## M3 — Spec Kit: Constitution + Specify
+## M3 — Spec Kit: Constitution + Specify (done)
 
 **Goal:** turn the raw idea note into a real concept + requirements spec,
 using GitHub Spec Kit per decision 4 — this is the Requirements Gate from
 `assessment.md` Section 6.
 
-- Install Spec Kit in WhisperFlow.
-- Run the Constitution phase: a short set of project principles (e.g.,
-  "prefer explicit CLI flags over interactive prompts," "no network calls
-  unless a cloud provider is explicitly selected") — this matters more than
-  it looks like it should, since it's what later agents will be measured
-  against.
-- Run the Specify phase against `docs/ideas/initial-idea.md`, working
-  through the open questions already listed there (interface, local vs.
-  cloud transcription/translation, supported formats, target languages,
-  privacy/cost constraints).
-- Output: a numbered, testable requirements list (`FR-001`, `FR-002`, ...).
+- [x] Install Spec Kit in WhisperFlow (`specify init --here --force
+  --non-interactive --integration claude`).
+- [x] Run the Constitution phase: five principles derived from decisions
+  already made and the existing `.claude/agents/*`/`CLAUDE.md`, not
+  invented fresh (`.specify/memory/constitution.md`, v1.0.1).
+- [x] Run the Specify phase against `docs/ideas/initial-idea.md`, resolving
+  all seven listed open questions — CLI-only, local/on-device transcription
+  only, `.srt` output, **transcription-only for v1** (translation deferred
+  as a fast-follow — reaffirmed after an explicit scope check-in, see
+  decisions.md).
+- Output: a numbered, testable requirements list (`FR-001`...`FR-010` —
+  corrected from this plan's original `REQ-` prefix to match Spec Kit's
+  own template convention; see decisions.md).
 
-**Evidence:** a committed requirements spec with no open
-`[NEEDS CLARIFICATION]` markers; you've reviewed and approved it (Requirements
-Gate is human-approved per Section 6).
+**Evidence:** `WhisperFlow/specs/001-video-subtitle-generator/spec.md` +
+`checklists/requirements.md`, committed and pushed to `main`
+(commits `2a0bc65`, `593a38c`), zero `[NEEDS CLARIFICATION]` markers
+(verified with `grep`, not the checklist's checkboxes alone). Reviewed and
+approved as transcription-only v1 — Requirements Gate closed
+(Section 6, human-approved per Principle II).
 
 ## M4 — Architecture + task breakdown
 
