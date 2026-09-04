@@ -97,7 +97,21 @@ using GitHub Spec Kit per decision 4 — this is the Requirements Gate from
   --non-interactive --integration claude`).
 - [x] Run the Constitution phase: five principles derived from decisions
   already made and the existing `.claude/agents/*`/`CLAUDE.md`, not
-  invented fresh (`.specify/memory/constitution.md`, v1.0.1).
+  invented fresh (`.specify/memory/constitution.md`, v1.0.1). Constitution
+  is project-wide, not feature-specific, so it's the one Spec Kit phase
+  that correctly stays on `main` directly.
+- **MUST, before running Specify** (corrected 2026-09-04 — skipped for
+  this feature, see decisions.md): create and check out a real feature
+  branch matching the feature directory name Spec Kit will use (e.g.
+  `git checkout -b 001-<slug>`, matching `001-video-subtitle-generator`'s
+  own naming). Every phase from Specify through the end of M4 — Specify,
+  Clarify, Plan, Tasks, Analyze, ADRs — commits to this branch, never
+  `main` directly. `.specify/extensions.yml` hooks are not configured, so
+  nothing creates this branch automatically; it must be done by hand,
+  every time, for every future feature. Skipping this is exactly what
+  produced the `/speckit.analyze` CRITICAL finding (D1) on this feature —
+  `tasks.md` described task branches relative to a feature branch that
+  was never actually created.
 - [x] Run the Specify phase against `docs/ideas/initial-idea.md`, resolving
   all seven listed open questions — CLI-only, local/on-device transcription
   only, `.srt` output, **transcription-only for v1** (translation deferred
@@ -149,8 +163,21 @@ to reinvent. See decisions.md.
   each referencing its `FR-xxx` ID — this reference is what M5's
   traceability check will enforce.
 
+- **MUST, once `/speckit.analyze` is clean and you approve the plan**
+  (Design Gate): open a PR from the feature branch to `main` carrying
+  every planning artifact produced since the branch was created —
+  `spec.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`,
+  `plan.md`, `tasks.md`, and the ADRs. Merging this PR *is* the Design
+  Gate approval action (Principle II), not a separate verbal sign-off it
+  merely follows. Only after this merge do `/speckit.taskstoissues` and
+  M7's per-task branches begin — task branches (Principle IV) are cut
+  from `main` for real at that point, because `main` actually contains
+  the approved plan/tasks by then, not just a description claiming it
+  will.
+
 **Evidence:** `plan.md`/`research.md`/`data-model.md`/`tasks.md` +
-ADRs committed; `/speckit.analyze` run with no unresolved CRITICAL
+ADRs committed on the feature branch, then merged to `main` via PR (not
+left unmerged); `/speckit.analyze` run with no unresolved CRITICAL
 findings; every requirement maps to at least one GitHub Issue; you've
 approved the plan (Design Gate, human-approved).
 
