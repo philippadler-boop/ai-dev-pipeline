@@ -712,3 +712,60 @@ M6 marked done in `implementation-plan.md`. Next: M7 — first end-to-end
 task, supervised (pick the smallest task from `tasks.md`, prove
 Developer -> CI -> Reviewer -> QA -> human merge works before trusting the
 loop with anything real).
+
+## 2026-09-04 -- CodeQL/GHAS private-repo gap found during M7 (T001); assessment.md corrected
+
+PR #38 (T001) was the first PR with tracked `.py` files, so it was the
+first time CodeQL's `analyze` step actually ran end-to-end rather than
+being skipped by the "nothing to scan" guard. It hit two distinct
+failures, diagnosed from real log output, not guessed:
+
+1. `##[error]Resource not accessible by integration -
+   .../actions/workflow-runs#get-a-workflow-run` -- the scan itself
+   (extraction, database build, 45 queries, SARIF export) succeeded
+   completely; this error came from CodeQL's own telemetry call to the
+   Actions API, which needs `actions: read`. Once any `permissions:`
+   block is declared on a job, GitHub Actions defaults every unlisted
+   scope to `none`, and the original `codeql.yml` only listed
+   `security-events: write` and `contents: read`. Fixed by adding
+   `actions: read`.
+2. Separately, and more fundamentally: SARIF upload to the Security tab
+   needs the "GitHub Code Security" product enabled on the repo. Verified
+   against current GitHub docs (not assumed from training data, since
+   this is exactly the kind of platform-policy detail that changes): as
+   of GHAS's March 2025 unbundling, GitHub Code Security -- the half that
+   covers code scanning on **private** repos -- is purchasable *only* by
+   organizations on GitHub Team or Enterprise plans. An individual GitHub
+   Pro account (what this repo runs under) has **no purchase path at
+   all**, at any price. Public repos get code scanning free regardless.
+   Dependabot (alerts + security updates + version updates) is unaffected
+   either way -- fully free on private repos on any plan.
+
+This directly contradicted `assessment.md` Section 12/13's original
+claim that code scanning was "cheap/included for private repos on most
+plans." That claim was wrong for this account type. Corrected in
+`assessment.md` (Sections 12 and 13) to state the actual gating
+accurately.
+
+**Decision: stay private, don't make this repo public just to get free
+CodeQL upload.** Reasoning: going public would remove the account-type
+gate, but it also removes the access control that M6's entire security
+baseline (credential deny-list, least-privilege token policy) exists to
+defend against -- a public issue tracker and PRs from strangers is
+exactly the attack surface `assessment.md` Section 12 describes. Trading
+a real increase in attack surface for a code-scanning nicety, on a solo
+hobby/pilot project with no stated need for public distribution, isn't a
+good trade. Dependabot -- confirmed unaffected by any of this -- remains
+the automated dependency/security backbone; CodeQL keeps running as
+*analysis* (findings still visible in the workflow's job log, so nothing
+is lost except the Security-tab UI and PR-level SARIF annotations) with
+`upload: false` on the `analyze` step, and `security-events: write`
+dropped from the job's permissions since it's unused once upload is off.
+Revisit if the repo ever goes public, or moves under an org on a paid
+plan.
+
+Philipp's own Code session applied this fix directly (branch
+`fix/codeql-no-ghas-upload`, commit `f5c34fe`) rather than the narrower
+`actions: read`-only fix suggested first -- correctly recognizing the
+GHAS gate was the deeper, separate problem underneath the permissions
+error.

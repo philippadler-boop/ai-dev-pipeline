@@ -213,6 +213,24 @@ Implementation and Test gates real, per Section 6 and Section 11.
   (code 32) on zero source files instead of no-op'ing, so it needed an
   explicit `git ls-files '*.py'` check gating `init`/`analyze` behind a
   step output, not just a shell conditional inside one step.
+- [x] **Correction (found during M7/T001, not before):** SARIF upload
+  (the part of `codeql-action/analyze` that pushes findings to the
+  Security tab) needs the "GitHub Code Security" product on a private
+  repo, and that product has **no purchase path for an individual GitHub
+  Pro account** -- org-only, Team/Enterprise plans. `assessment.md`
+  Section 12/13 originally said code scanning was "cheap/included for
+  private repos on most plans" -- that was wrong for this account type
+  and has been corrected there. Decision: stay private, keep CodeQL
+  *analysis* running (findings visible in the job log) but set
+  `upload: false` on the `analyze` step and drop `security-events: write`
+  from the job's permissions (unused once upload is off); Dependabot is
+  unaffected and remains the primary automated dependency/security
+  backbone. See decisions.md for the full reasoning. `actions: read` was
+  also added to the job's permissions -- a separate, unrelated fix for a
+  "Resource not accessible by integration" error on the workflow-runs API
+  that CodeQL's own telemetry calls, which only surfaced once PR #38
+  became the first PR with tracked `.py` files for CodeQL to actually run
+  against.
 - [x] Traceability check: `.github/workflows/traceability.yml` fails the
   PR if its title doesn't match `FR-[0-9]{3,}` or `#[0-9]+`, per decision
   5. Corrected twice after shipping, both times from real evidence rather
