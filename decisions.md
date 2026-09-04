@@ -470,3 +470,83 @@ This is also the answer for any future second project: the same
 unless deliberately set up otherwise, so a new project's M3-equivalent
 constitution should include the same clarifying paragraph from the start
 rather than waiting to rediscover it via another CRITICAL Analyze finding.
+
+---
+
+## 2026-09-04 — Reversed: a feature branch SHOULD have existed for 001-video-subtitle-generator; MUST going forward
+
+The prior entry's fix ("this project doesn't use Spec Kit's hook-based
+branch-per-feature model") was wrong on reflection: "I think never
+creating `001-video-subtitle-generator` branch was a mistake on our
+side." Reversed the root-cause fix rather than patching around it again.
+
+Corrected `constitution.md` Principle IV (Branch-per-Task, Protected
+Main, bumped 1.2.0 -> 1.2.0 final wording — see WhisperFlow `8ae8944`
+after a rebase, superseding the reverted `4bdff9b` text) to require a
+real feature branch for Spec Kit's planning phases going forward:
+create and check out a branch matching the feature directory name
+(e.g. `001-<slug>`) before `/speckit.specify`; `/speckit.specify`
+through `/speckit.analyze` and `architect`'s ADRs all commit to that
+branch; it merges to `main` via PR once the plan is approved (Design
+Gate) — that merge *is* the approval action. `001-video-subtitle-generator`
+is documented as a one-time, grandfathered exception, since the
+requirement wasn't written down when that work happened. `CLAUDE.md`,
+`tasks.md`'s Notes, and `plan.md`'s Branch header updated to match.
+
+Also fixed the same gap at the source: `implementation-plan.md` M3 now
+has a MUST-level instruction to create the feature branch before
+Specify, and M4 now has a matching MUST-level instruction to merge that
+branch to `main` via PR once Analyze is clean and the plan is approved,
+with M4's evidence bar updated to require the merge. This is the
+permanent fix — every feature after this one creates its branch as a
+matter of following M3, not as something to remember to check for
+separately.
+
+Mid-rebase note: resolving this alongside an unrelated divergent-history
+issue (local `main` had been `git reset` behind `origin/main` by one
+commit, then diverged again with fresh local content) surfaced 3+3 real
+conflicts in `plan.md`/`tasks.md`, all following the same shape (the
+older, superseded branch-model text vs. the newer, decision-correct
+text) — resolved keeping the newer side in both files.
+
+---
+
+## 2026-09-04 — architect writes 4 ADRs for 001-video-subtitle-generator; Design Gate approved
+
+`architect` subagent (tools: Read, Grep, Glob, Write only — no Bash, no
+code-editing tools) ran against `plan.md`/`research.md`/`data-model.md`,
+producing `docs/adr/0001-local-asr-engine.md` through
+`0004-cli-framework.md` (local ASR engine, audio extraction, subtitle
+composition, CLI framework/progress display), each following
+Context/Decision/Alternatives Considered/Consequences and tracing to
+specific FR-/SC- IDs.
+
+First invocation (non-interactive `claude --agent architect -p "..."`)
+falsely appeared framework-side to have nothing left to do — but a
+"architect is done" report was checked, not trusted: `find docs/adr`
+and `git status --short` showed nothing had actually been written.
+The subagent's own transcript explained why: Claude Code's *session-level*
+permission gate (separate from the subagent's own `tools:` frontmatter
+allowlist, which does grant `Write`) requires interactive approval for a
+tool touching a new path, and `-p` mode can't prompt for that — it
+silently declined the writes instead of erroring loudly. Re-run
+interactively (no `-p`), with the write prompt approved live, produced
+the 4 real files plus an auto-created `.claude/settings.json`
+(`{"permissions": {"allow": ["Edit(docs/adr/*.md)"]}}`) — verified again
+independently (`find`/`cat`) rather than taking the second "done" report
+at face value either, since the first one had just been wrong.
+
+Reviewed all 4 ADRs against `research.md`'s per-dependency
+Decision/Rationale sections, `plan.md`'s Technical Context, and
+`spec.md`'s FR-/SC- IDs — all four check out (correct structure, correct
+traceability, consistent with the source artifacts). `.claude/settings.json`
+committed as shared config (not gitignored) since it's not
+machine-specific — it's a scoped, reviewable statement of what
+`architect` may touch, and committing it means a fresh clone doesn't hit
+the same non-interactive permission wall this run did. Both the ADRs and
+that settings file committed together (WhisperFlow `6bb44db`).
+
+Design Gate (Principle II) approved for this feature's ADRs. Push to
+`origin/main` still pending (this session cannot push — no GitHub
+credentials in the sandbox). Next: `/speckit.taskstoissues` converts
+`tasks.md`'s 29 tasks into GitHub Issues, closing M4.
