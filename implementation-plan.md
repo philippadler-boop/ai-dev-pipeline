@@ -193,7 +193,7 @@ mapped to GitHub Issues `#1`–`#29` (verified via `gh issue list`, not the
 completion report alone); you approved the ADRs (Design Gate,
 human-approved). M4 closed 2026-09-04.
 
-## M5 — CI: build, test, lint, security, traceability
+## M5 — CI: build, test, lint, security, traceability (done)
 
 **Goal:** the objective, non-agent-controlled evidence layer that makes the
 Implementation and Test gates real, per Section 6 and Section 11.
@@ -214,8 +214,17 @@ Implementation and Test gates real, per Section 6 and Section 11.
   explicit `git ls-files '*.py'` check gating `init`/`analyze` behind a
   step output, not just a shell conditional inside one step.
 - [x] Traceability check: `.github/workflows/traceability.yml` fails the
-  PR if `github.event.pull_request.title`/`.body` don't match
-  `FR-[0-9]{3,}` or `#[0-9]+`, per decision 5.
+  PR if its title doesn't match `FR-[0-9]{3,}` or `#[0-9]+`, per decision
+  5. Corrected twice after shipping, both times from real evidence rather
+  than review: (1) checking the PR body too let Dependabot's
+  auto-generated changelog (full of the *upstream* repo's own `#NNNN` PR
+  references) produce a false pass, unrelated to anything in this repo —
+  narrowed to title-only, since that's short and hand-written everywhere
+  else in this project; (2) Dependabot's own PRs have no way to add a
+  reference at all (titles are template-generated, e.g. "Bump X from Y to
+  Z"), so the job is skipped entirely for `dependabot[bot]` — a skipped
+  required check counts as passing, so this doesn't loosen the gate for
+  anyone who actually can add one.
 - [x] `main`'s branch protection updated (`gh api PUT
   branches/main/protection`) to require all five checks
   (`build`/`lint`/`test`/`codeql`/`traceability`), `strict: true`
@@ -232,12 +241,24 @@ Implementation and Test gates real, per Section 6 and Section 11.
 (branch `chore/m5-ci-cd-setup`, tracking issue #30), all five checks
 green, merged to `main`. Branch protection confirmed live via the `gh
 api` response (`checks[].app_id: 15368` on all five contexts, matching
-the GitHub Actions app). **Still open:** a throwaway PR (e.g., a one-line
-README fix, deliberately *not* referencing an `FR-` ID or issue) opened
-and observed to be blocked by the traceability check, then closed
-without merging — proves the gate actually gates before any real code
-depends on it, not just that it passed once on a PR that happened to
-reference one.
+the GitHub Actions app).
+
+Negative-test evidence: PR #34, deliberately titled without an `FR-`/`#N`
+reference, was observed blocked by `traceability` while `build`/`lint`/
+`test`/`codeql` all passed clean — confirmed via `gh pr checks 34`, not
+assumed — then closed without merging.
+
+Two real bugs surfaced live by Dependabot's own PRs (#32, #33 — routine
+`codeql-action` SHA bumps) before the traceability check's own logic was
+trustworthy, both fixed and shipped via PR #35: the false-pass-on-body
+bug and the Dependabot-titles-never-match bug (see the check description
+above). Also surfaced and worked around during this: branch protection's
+`strict: true` blocked `#33` from merging after `#32` landed first
+(head branch no longer up to date with `main` — expected behavior, fixed
+via `gh pr update-branch`), and GitHub's OAuth `workflow`-scope
+requirement blocked the first attempt to merge any PR touching
+`.github/workflows/*` (fixed via `gh auth refresh -h github.com -s
+workflow`).
 
 ## M6 — Security baseline
 

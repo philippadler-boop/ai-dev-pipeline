@@ -624,3 +624,51 @@ Still open before M5 fully closes: the negative-test evidence
 `implementation-plan.md` calls for (a non-referencing throwaway PR
 observed to be blocked by `traceability.yml`). Next after that: M6
 (security baseline) before M7's first real implementation task.
+
+---
+
+## 2026-09-04 — M5 fully closed: negative-test evidence, two live bugs fixed
+
+Closed out the one item M5 was still missing: opened WhisperFlow PR #34
+(branch `test/traceability-negative-check`, a one-line README scratch
+edit, title deliberately not referencing anything), confirmed via
+`gh pr checks 34` that `traceability` failed while `build`/`lint`/`test`/
+`codeql` all passed, then closed it without merging. That's the actual
+proof the gate blocks before any real code depends on it, not just that
+it passed once on a PR that happened to reference something.
+
+While handling the two Dependabot PRs this surfaced (#32/#33, routine
+`codeql-action` SHA bumps — Dependabot's `github-actions` ecosystem entry
+already doing its job), the traceability check itself turned out to have
+two real bugs, both found live rather than by inspection:
+
+- Checking the PR body (not just title) let #33's auto-generated
+  Dependabot changelog — full of `codeql-action`'s *own* upstream PR
+  references like `#4072` — produce a false pass. The regex couldn't
+  tell "this repo's issue #30" from "some other repo's PR #4072" once it
+  was allowed to match anywhere in a long, auto-generated body. Fixed by
+  checking the PR title only — short, hand-written, and already the
+  pattern used everywhere else in this project (task titles, every PR
+  title so far).
+- Independently, Dependabot's own PR titles ("Bump X from Y to Z") never
+  contain a reference at all and never could — fixed by skipping the job
+  entirely for `github.event.pull_request.user.login ==
+  'dependabot[bot]'` (a skipped required check counts as passing, so this
+  doesn't loosen the gate for anyone who can actually add a reference).
+
+Both fixes shipped together via PR #35 (branch
+`fix/traceability-exempt-dependabot`), rebased cleanly onto `main` after
+#32/#33 merged ahead of it.
+
+Two more operational snags along the way, neither a bug in our files:
+`#33` briefly failed to merge ("head branch is not up to date with base")
+after `#32` merged first — `strict: true` on branch protection working
+as intended, resolved with `gh pr update-branch`. And the very first
+attempt to merge any PR touching `.github/workflows/*` failed with
+"refusing to allow an OAuth App to ... without `workflow` scope" — a
+GitHub-wide restriction on tokens lacking that scope, unrelated to
+anything in this project's own config, fixed with `gh auth refresh -h
+github.com -s workflow`.
+
+M5 marked done in `implementation-plan.md`. Next: M6 (security baseline)
+before M7's first real implementation task.
