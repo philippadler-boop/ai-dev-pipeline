@@ -454,19 +454,34 @@ real evidence (`permission_denials_count`, actual init-event tool lists)
 rather than assumed correct. `docs/validation/T002.md` and
 `docs/validation/T003.md` in WhisperFlow carry the full qa evidence.
 
-## M9 — Retro and adjust
+## M9 — Retro and adjust (done)
 
 **Goal:** close the loop on this implementation plan itself.
 
-- Note any friction from M2–M8 in `decisions.md` (a subagent's tool
-  allowlist was too tight/loose, the traceability check had false
-  positives, review reports needed a stricter template, etc.).
-- Update the subagent definitions / CI config in WhisperFlow accordingly.
-- Only then start treating the pipeline as "working" for real WhisperFlow
-  features beyond the first pilot task.
+- [x] Read back through every `decisions.md` entry from M2 through M8
+  looking for recurring friction, not just each milestone's own
+  close-out note.
+- [x] Two real gaps found and fixed in WhisperFlow (branch
+  `docs/m9-retro-adjustments`, commit `2db0850`, PR pending): `reviewer`
+  had no documented way to receive a PR diff (it has no Bash/git/gh) —
+  now explicit in `reviewer.md`/`CLAUDE.md` that the invoker must supply
+  it; and two hard-won lessons (automation-mode `claude-code-action`
+  grants zero tools by default; smoke-test a subagent's tool boundary by
+  invocation, not self-report) are now written into a new "Operational
+  lessons" section of `CLAUDE.md` instead of living only in this
+  project's `decisions.md` history.
+- [x] Checked, not re-fixed: M2's open recommendation about the VS Code
+  workspace root leaking Bash permissions across sibling repos — confirmed
+  resolved (likely as a side effect of the `C:\Users\phili\Projects`
+  migration), not assumed fixed.
+- [x] Pipeline is now to be treated as "working" for real WhisperFlow
+  feature work beyond the T001–T003 pilot tasks, not something still
+  being proven out.
 
-**Evidence:** a `decisions.md` entry summarizing what was learned and what
-changed as a result.
+**Evidence:** `decisions.md` entry "M9 closed" summarizing what was found
+and what changed; WhisperFlow commit `2db0850` (branch
+`docs/m9-retro-adjustments`) with the actual `reviewer.md`/`CLAUDE.md`
+fixes.
 
 ---
 

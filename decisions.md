@@ -944,3 +944,78 @@ M8 marked done in `implementation-plan.md`, with the full setup story
 (auth/scope decisions, the two smoke-test failures and fixes, the T002/T003
 evidence) written into that section rather than just a checkbox. Next:
 M9 -- retro and adjust.
+
+## 2026-09-04 -- M9 closed: retro across M2-M8, two real gaps found and fixed
+
+Read back through every decisions.md entry from M2 (subagents shipped)
+through M8 (unattended pilot) looking for recurring friction rather than
+treating each milestone's close-out as the end of the story. Two findings
+were real gaps worth fixing in WhisperFlow itself, not just retrospective
+color:
+
+**1. `reviewer` has no Bash/git/gh, and nothing ever documented how a PR
+diff is supposed to reach it.** This was invisible as long as `reviewer`
+was only invoked in the same session as `developer` (who could describe
+the diff). It became a real problem during M7's retroactive review, where
+`reviewer` correctly disclosed it "could not run `gh pr diff` directly"
+and substituted on-disk tree state -- the right behavior in the moment,
+but only because that specific reviewer happened to handle the gap
+gracefully rather than guessing. Fixed at the source: `reviewer.md` and
+`CLAUDE.md` (WhisperFlow, branch `docs/m9-retro-adjustments`) now say
+explicitly that whoever invokes `reviewer` must supply the diff --
+paste `git diff main...<branch>` / `gh pr diff <PR>` into the prompt, or
+check out the branch first -- rather than leaving it to be rediscovered
+per-invocation.
+
+**2. Two lessons that were learned the hard way and were at real risk of
+being re-learned the hard way on a second project**, now written down in
+a new "Operational lessons" section of `CLAUDE.md` instead of living only
+in this file's history:
+- Automation-mode `claude-code-action` runs (M8) grant zero tool access
+  by default -- any future `*-agent.yml` workflow needs `--allowedTools`
+  or a `settings` permissions block from the start, not discovered via a
+  silent-failure smoke test again.
+- Smoke-testing a subagent's tool boundary by asking it to actually
+  invoke a tool (and report the literal result) is reliable; asking it to
+  self-report its tool list is not (M2's CodeGraph false alarm) -- a
+  self-report can describe injected MCP-server context as if it were a
+  real capability.
+
+**Checked and found already resolved, not re-fixed:** M2's open
+recommendation to stop the VS Code workspace root from being opened at
+the parent `Projects` folder (which had let Bash-permission grants leak
+across sibling repos) -- confirmed via `device_bash`/`find` that
+`WhisperFlow/.claude/settings.local.json` now lives inside `WhisperFlow`
+itself, not at the `Projects` root. Most likely resolved as a side effect
+of the OneDrive-to-`C:\Users\phili\Projects` migration giving each repo
+its own folder, not by a deliberate fix -- worth knowing it's fine now,
+but also that it wasn't verified as fixed until this retro checked it
+directly.
+
+**Not turned into a fix, deliberately:** the recurring `.git/*.lock`
+contention on `device_bash` operations against the Windows-mounted repo
+folders (seen in both the OneDrive and the plain `Projects` location).
+This is friction in *this Cowork session's* tooling for reaching the
+user's filesystem, not in WhisperFlow's pipeline itself -- nothing in
+`CLAUDE.md`/CI/subagent config would fix it, and the working mitigation
+(`rm -f` the stale lock, retry) has been reliable every time it's come
+up. Noted here so it isn't mistaken for an open pipeline issue later.
+
+**What this confirms, project-wide:** every real bug or gap found across
+M2-M9 -- the CodeGraph false alarm, D1's phantom branch, the CodeQL/GHAS
+gating error in assessment.md, the traceability regex bugs, the PR-38
+merge-before-review gap, my own direct-to-main mistake, M8's zero-tool
+automation default, and now reviewer's undocumented diff-sourcing gap --
+was found by checking actual evidence (file contents, command output,
+runtime invocation results, commit authorship) against a claim, not by
+trusting the claim. That discipline is the actual product of this
+pipeline project as much as WhisperFlow's own code is.
+
+`implementation-plan.md`'s M9 checklist marked done. WhisperFlow's fix
+commit (`2db0850` on `docs/m9-retro-adjustments`) still needs a PR and
+merge from Philipp's own terminal -- device_bash has no GitHub
+credentials to open or merge it from here.
+
+Per `implementation-plan.md`, M9 was the last plan milestone: the pipeline
+is now to be treated as "working" for real WhisperFlow feature work beyond
+the pilot tasks, not something still being proven out.
