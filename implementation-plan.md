@@ -128,7 +128,7 @@ using GitHub Spec Kit per decision 4 — this is the Requirements Gate from
 approved as transcription-only v1 — Requirements Gate closed
 (Section 6, human-approved per Principle II).
 
-## M4 — Architecture + task breakdown
+## M4 — Architecture + task breakdown (done)
 
 **Goal:** the Design Gate — via Spec Kit's own Plan/Tasks chain per
 decision 4 (use Spec Kit as-is), not a hand-rolled equivalent. Corrected
@@ -140,28 +140,34 @@ inspected — it already ships `/speckit.plan`, `/speckit.tasks`, and
 `/speckit.taskstoissues`, covering exactly what this milestone was about
 to reinvent. See decisions.md.
 
-- Run `/speckit.clarify` against the approved spec first (Spec Kit's own
-  recommended order — it's meant to run and complete before `/speckit.plan`,
-  and skipping it raises rework risk per the tool's own instructions).
-- Run `/speckit.plan`: produces `plan.md` (tech stack, project structure,
-  a Constitution Check gate) plus `research.md`, `data-model.md`,
-  `contracts/`, `quickstart.md` under `specs/001-video-subtitle-generator/`.
-- Run `/speckit.tasks`: produces `tasks.md`, a dependency-ordered task
-  breakdown.
-- Run `/speckit.analyze`: a non-destructive cross-artifact consistency
-  check across `spec.md`/`plan.md`/`tasks.md`, meant to run after Tasks
-  and before Implement (added 2026-09-04 for the same reason Clarify was
-  added before Plan — cheap insurance before the expensive step, and it's
-  Spec Kit's own recommended order, not an optional extra). Resolve any
-  CRITICAL findings before proceeding.
-- Invoke `architect.md` to write one ADR per significant decision
-  `plan.md` surfaces (transcription engine choice, subtitle format, CLI
-  framework) into `docs/adr/`, using the structured template (context /
-  decision / alternatives considered / consequences) — a companion to
-  `plan.md`, not a replacement for it. No separate `docs/architecture.md`.
-- Run `/speckit.taskstoissues` to convert `tasks.md` into GitHub Issues,
-  each referencing its `FR-xxx` ID — this reference is what M5's
-  traceability check will enforce.
+- [x] Run `/speckit.clarify` against the approved spec first (Spec Kit's
+  own recommended order). Four resolutions: 2-hour max length firmed up,
+  no-resume-on-interrupt, new FR-011 (progress indicator), new SC-006
+  (timing target).
+- [x] Run `/speckit.plan`: produced `plan.md`, `research.md`,
+  `data-model.md`, `contracts/cli.md`, `quickstart.md` under
+  `specs/001-video-subtitle-generator/`.
+- [x] Run `/speckit.tasks`: produced `tasks.md` — 29 dependency-ordered
+  tasks (`T001`–`T029`, expanded from an initial 27 by two Analyze-driven
+  additions, T028/T029).
+- [x] Run `/speckit.analyze`: found 1 CRITICAL (D1: task branches
+  described relative to a feature branch that didn't exist) + 5
+  lower-severity findings, all independently spot-checked against the
+  actual files (not taken on the report's word) and fixed. Re-verified
+  clean.
+- [x] Invoke `architect.md` to write one ADR per significant decision
+  `plan.md`/`research.md` surfaced: `0001-local-asr-engine.md`,
+  `0002-audio-extraction.md`, `0003-subtitle-composition.md`,
+  `0004-cli-framework.md`, all under `docs/adr/`. First non-interactive
+  (`-p`) invocation silently wrote nothing — Claude Code's session
+  permission gate can't prompt for approval in that mode; re-run
+  interactively, with the write approved live, produced all four. Each
+  independently reviewed against `research.md`/`plan.md`/`spec.md` —
+  correct structure, correct FR-/SC- traceability.
+- [x] Run `/speckit.taskstoissues` to convert `tasks.md` into GitHub
+  Issues: 29 of 29 converted, `#1`–`#29`, none skipped, titles verified
+  (via `gh issue list`) to match `tasks.md` character-for-character on
+  spot-checked entries (T001, T025, T029).
 
 - **MUST, once `/speckit.analyze` is clean and you approve the plan**
   (Design Gate): open a PR from the feature branch to `main` carrying
@@ -173,13 +179,19 @@ to reinvent. See decisions.md.
   M7's per-task branches begin — task branches (Principle IV) are cut
   from `main` for real at that point, because `main` actually contains
   the approved plan/tasks by then, not just a description claiming it
-  will.
+  will. **Did not apply to this feature**: per Principle IV's documented,
+  one-time exception, `001-video-subtitle-generator` never had a feature
+  branch, so there was no PR for the merge-is-approval mechanic to attach
+  to — Design Gate approval here was your direct sign-off on the ADRs
+  instead. Every feature after this one follows the MUST as written.
 
-**Evidence:** `plan.md`/`research.md`/`data-model.md`/`tasks.md` +
-ADRs committed on the feature branch, then merged to `main` via PR (not
-left unmerged); `/speckit.analyze` run with no unresolved CRITICAL
-findings; every requirement maps to at least one GitHub Issue; you've
-approved the plan (Design Gate, human-approved).
+**Evidence:** `plan.md`/`research.md`/`data-model.md`/`tasks.md` + ADRs
+committed to `main` directly (`8ae8944`, `6bb44db` — grandfathered
+exception, no feature branch/PR for this feature, see above);
+`/speckit.analyze` run with no unresolved CRITICAL findings; all 29 tasks
+mapped to GitHub Issues `#1`–`#29` (verified via `gh issue list`, not the
+completion report alone); you approved the ADRs (Design Gate,
+human-approved). M4 closed 2026-09-04.
 
 ## M5 — CI: build, test, lint, security, traceability
 

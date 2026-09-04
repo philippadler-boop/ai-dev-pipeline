@@ -550,3 +550,31 @@ Design Gate (Principle II) approved for this feature's ADRs. Push to
 `origin/main` still pending (this session cannot push — no GitHub
 credentials in the sandbox). Next: `/speckit.taskstoissues` converts
 `tasks.md`'s 29 tasks into GitHub Issues, closing M4.
+
+---
+
+## 2026-09-04 — M4 closed: taskstoissues verified, all 29 tasks on GitHub
+
+A "done" report (`gh issue list`/`gh issue create` via a script parsing
+`tasks.md`, since the GitHub MCP server wasn't available) was not taken
+at face value — this session can't reach GitHub itself (private repo,
+no `gh` CLI or credentials in either this sandbox or the device-linked
+shell, confirmed by trying both), so asked for `gh issue list` output
+instead of accepting the claim. Output showed 29 of 29 issues,
+`#1`-`#29`, titles matching `tasks.md`'s `T001`/`T025`/`T029` lines
+exactly (already independently pulled from the file beforehand, so this
+was a real cross-check, not just reading the report back).
+
+M4 marked done in `implementation-plan.md`, with one nuance recorded
+inline: the milestone's "MUST open a PR from the feature branch, merge
+*is* Design Gate approval" step doesn't literally apply to this
+feature, since `001-video-subtitle-generator` is the documented,
+one-time exception with no feature branch at all (Principle IV) — its
+Design Gate approval was your direct sign-off on the ADRs instead.
+Every feature after this one goes through the PR-merge mechanic as
+written.
+
+Next: M5 — CI (build/test/lint), Dependabot + code scanning, the
+FR-/issue-ID traceability check, updated branch protection, and pinning
+third-party Actions to a SHA — must all exist before M7's first real
+implementation task.
