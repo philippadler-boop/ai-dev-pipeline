@@ -103,7 +103,7 @@ using GitHub Spec Kit per decision 4 — this is the Requirements Gate from
   through the open questions already listed there (interface, local vs.
   cloud transcription/translation, supported formats, target languages,
   privacy/cost constraints).
-- Output: a numbered, testable requirements list (`REQ-001`, `REQ-002`, ...).
+- Output: a numbered, testable requirements list (`FR-001`, `FR-002`, ...).
 
 **Evidence:** a committed requirements spec with no open
 `[NEEDS CLARIFICATION]` markers; you've reviewed and approved it (Requirements
@@ -121,7 +121,7 @@ at a time.
   CLI framework) using the structured template (context / decision /
   alternatives considered / consequences).
 - Convert the task list into GitHub Issues, one per task, each referencing
-  its `REQ-xxx` ID in the issue body — this reference is what M5's
+  its `FR-xxx` ID in the issue body — this reference is what M5's
   traceability check will enforce.
 
 **Evidence:** architecture doc + ADRs committed; every requirement maps to
@@ -136,7 +136,7 @@ Implementation and Test gates real, per Section 6 and Section 11.
 - Enable Dependabot (alerts + security updates) and GitHub code scanning —
   both free, both configured once.
 - Add a traceability check: a small script that fails the workflow if the
-  PR body/title doesn't reference a `REQ-` or issue number. This is
+  PR body/title doesn't reference a `FR-` or issue number. This is
   required per decision 5, not optional, because unattended agents (M8)
   won't self-police that link the way a human would.
 - Update `main`'s branch protection to require these checks before merge

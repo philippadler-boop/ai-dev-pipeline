@@ -52,7 +52,7 @@ on either, or before advising on the pilot project itself:
   third-party Actions) is mandatory from V1 rather than deferred — broader
   autonomy is what makes the stricter posture necessary.
 - **Traceability is enforced by CI, not convention**: a required check
-  fails any PR whose title/body doesn't reference a `REQ-`/issue ID, since
+  fails any PR whose title/body doesn't reference a `FR-`/issue ID, since
   unattended agents won't self-police that link the way a human would.
 
 ## Working conventions for this folder
