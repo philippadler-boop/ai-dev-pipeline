@@ -485,6 +485,33 @@ fixes.
 
 ---
 
+## Post-M9 — Ongoing pipeline findings from real feature work
+
+M9 said the pipeline should now be treated as working, not still being
+proven out -- but "working" doesn't mean "nothing more to find." This
+section holds findings that surface from real WhisperFlow feature work
+going forward, the same way M2-M9 held findings from getting the pipeline
+built. Each entry points to its full `decisions.md` write-up rather than
+duplicating it here.
+
+- **2026-09-05 -- Two-PR-per-task gap (Phase 2, T004-T008).** Real
+  evidence (commit-graph timestamps) confirmed every task produces two
+  PRs -- implementation, then a separate QA-report PR -- and the
+  implementation reliably merges first, so the durable validation
+  evidence lands after the merge decision it's meant to inform. A 4-branch
+  promotion model was considered and rejected (solves environment
+  promotion, not PR ordering, and this project has no deployable
+  environments to promote to). Decision: collapse to one PR per task --
+  `qa` commits its report onto the same branch as the implementation,
+  updating the existing PR. Fix handed off as a GitHub issue for
+  `developer` to implement (recommended: interactively, not via the
+  unattended `claude-dev` label, since it edits the pipeline's own
+  governance files), not yet merged. Full detail: `decisions.md`,
+  "Phase 2 (T004-T008) succeeded, but confirmed a real
+  two-PR-per-task gap."
+
+---
+
 ## Explicitly out of scope for V1
 
 Per `assessment.md` Section 15 (Evolution Path), these are intentionally

@@ -1019,3 +1019,69 @@ credentials to open or merge it from here.
 Per `implementation-plan.md`, M9 was the last plan milestone: the pipeline
 is now to be treated as "working" for real WhisperFlow feature work beyond
 the pilot tasks, not something still being proven out.
+
+## 2026-09-05 -- Phase 2 (T004-T008) succeeded, but confirmed a real two-PR-per-task gap
+
+Philipp sent all five Phase 2 tasks (T004-T008) through the pipeline at
+once via the `claude-dev` label -- `developer` ran unattended and in
+parallel on GitHub Actions (not one at a time like M8's two-task pilot),
+`reviewer`/`qa` ran locally in sequence against each PR. All five landed.
+This is real evidence the pipeline holds up past a single pilot task, not
+just that it worked once.
+
+**But he also noticed something worth checking, and it held up under real
+evidence, not just impression:** pulled the actual commit graph
+(`git log --all --graph`) rather than trusting the PR list's ordering.
+For every one of the five tasks, the implementation PR merges to `main`
+first, and the QA validation report -- committed on its own branch, as its
+own separate PR -- merges minutes later: T005 (36 min gap), T006 (26 min),
+T004 (25 min), T007 (4 min), T008 (4 min). Confirmed this is not new: the
+same shape shows up again in the most recent work at time of writing
+(issue #74's fix landed as PR #76 for the code, then a separate PR #77 for
+its QA report).
+
+This is a milder, steady-state recurrence of the exact gap M7 found once
+as a one-off mistake (PR #38 merging before reviewer/qa ever ran): the
+durable evidence this project's whole "evidence over self-report"
+discipline depends on lands in the repo *after* the merge decision it's
+supposed to inform, not before. The qa evaluation itself likely did
+happen before each merge (Philipp watching it PASS locally) -- but if a
+trailing report PR were ever forgotten, a task could sit merged on `main`
+with no committed evidence trail at all, and nothing would catch it.
+Constitution Principle V already says one validation report "per
+task/PR" -- the two-PR split was a practice that drifted in under that
+wording, not something the constitution ever called for.
+
+**Considered and rejected: a 4-branch dev -> sit -> uat -> main promotion
+model** (Philipp's initial idea). That pattern earns its cost when each
+stage is a real deployable environment with different config/data to
+verify against. WhisperFlow is a local CLI tool with no live environments
+-- GitHub Actions' per-run VM is already the only "environment" that
+exists, per M6's container-boundary decision. Adding three more long-lived
+branches would triple the merge overhead per task without addressing the
+actual root cause (PR ordering/shape), and reintroduces exactly the
+main-vs-branch drift risk the OneDrive migration already fought once.
+
+**Decision: collapse to one PR per task.** `qa` commits its validation
+report as an additional commit onto the *same* branch as the
+implementation it's validating -- checked out, added, pushed -- updating
+the existing PR rather than opening a second one. One task, one branch,
+one PR, carrying code and its own evidence together by the time a human
+merges it. Chosen over the alternative of keeping two PRs but enforcing
+merge order by policy, because a structural fix that can't be skipped
+beats a rule someone has to remember -- the same reasoning already used
+for M5's CodeQL check-and-skip fix over a `dummy.py` placeholder.
+
+**Not implemented directly from this session.** This changes governance
+files -- `CLAUDE.md`, `constitution.md` (Principle IV/V wording), and
+`qa.md`'s own instructions -- not application code, so at Philipp's
+request it's going through the normal Issue -> `developer` -> `reviewer`
+-> `qa` -> human-merge chain like any other change, rather than being
+patched directly the way the M9 retro fixes were. The issue text itself
+(handed to Philipp in chat, not written to this repo) recommends
+`developer` be invoked **interactively**, not via the unattended
+`claude-dev` label, specifically because this is the pipeline editing the
+rules that govern its own subagents -- nothing in the tool allowlists
+actually prevents `developer` (interactive or unattended) from editing
+these files, so this is a judgment call about which class of change
+deserves a human watching it happen, not an enforced restriction.
