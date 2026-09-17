@@ -24,7 +24,12 @@ project is chosen.
 - [x] Open questions from the assessment resolved (see decisions.md)
 - [x] Pilot project chosen: **WhisperFlow** (`../WhisperFlow`) — video subtitle generator
 - [x] V1 implementation plan written
-- [ ] V1 built on the pilot project's repo
+- [x] V1 built and proven on the pilot project's repo (M0-M9) — pilot
+      feature 001 (video-subtitle-generator, 29 tasks) shipped complete
+      2026-09-17
+- [ ] Ongoing: pipeline maturity work continues from real WhisperFlow
+      feature work (open issues, process refinements — see
+      `implementation-plan.md`, "Post-M9")
 
 ## How this relates to an actual project repo
 

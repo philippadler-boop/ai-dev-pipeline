@@ -1,6 +1,9 @@
 # V1 Implementation Plan
 
-Status: active — pilot project is **WhisperFlow** (`../WhisperFlow`)
+Status: M0-M9 done; pilot feature 001 (video-subtitle-generator) shipped
+complete as of 2026-09-17 — pilot project is **WhisperFlow**
+(`../WhisperFlow`). Pipeline now operating on ongoing WhisperFlow work
+(see "Post-M9" below), not still being proven out.
 
 This turns `assessment.md` Section 14 (Recommended V1) and the decisions in
 `decisions.md` into an ordered, concrete sequence of milestones. Each
@@ -494,21 +497,70 @@ going forward, the same way M2-M9 held findings from getting the pipeline
 built. Each entry points to its full `decisions.md` write-up rather than
 duplicating it here.
 
-- **2026-09-05 -- Two-PR-per-task gap (Phase 2, T004-T008).** Real
+- **2026-09-17 -- Feature 001 (video-subtitle-generator) complete.** All
+  29 tasks (T001-T029) in `specs/001-video-subtitle-generator/tasks.md`
+  are merged to `main`, each with CI green, an independent `reviewer`
+  approval, and a `qa` validation report on the same PR. This is the
+  pilot feature the whole V1 pipeline was built to run end-to-end, not
+  just the T001-T003 slice M7/M8 used to prove the mechanism. Two more
+  real gaps were found operating at this scale and filed as issues, both
+  still open: **#131** (`/speckit.taskstoissues` generates issues with an
+  empty body — upstream Spec Kit template behavior, a readability gap,
+  not a correctness one) and **#132** (`qa` was once run mid-review rather
+  than after review settled, on T010/PR #85 — not recurring since, but
+  nothing structurally prevents it). A further-out idea, not yet started,
+  is captured in WhisperFlow's `docs/ideas/reviewer-qa-automation.md`:
+  moving `reviewer`/`qa` themselves into GitHub Actions instead of
+  manually-invoked local sessions. Full detail: `decisions.md`,
+  "Feature 001 (video-subtitle-generator) complete."
+
+- **2026-09-06 -- Two features shipped outside the Spec Kit flow.** A CLI
+  help-text banner (issue #110) and Windows MSI packaging (issues #112,
+  #114 — PyInstaller + WiX, bundling FFmpeg, `packaging/windows/`) both
+  went straight from a GitHub issue to `developer` to merge, with no
+  `spec.md` entry, `FR-`/`SC-` traceability, or ADR — the first real case
+  of work skipping the Requirements/Design Gate entirely rather than
+  collapsing it into a lightweight doc per `assessment.md` Section 2.
+  Execution gates (PR review, CI, human merge) still held. Not unwound;
+  recorded as a real data point on where the "small enough to skip Spec
+  Kit" line actually falls, which nothing has explicitly drawn yet. Full
+  detail: `decisions.md`, "Two features shipped outside the Spec Kit
+  flow."
+
+- **2026-09-05 -- Two-PR-per-task gap (Phase 2, T004-T008) — fixed.** Real
   evidence (commit-graph timestamps) confirmed every task produces two
   PRs -- implementation, then a separate QA-report PR -- and the
   implementation reliably merges first, so the durable validation
   evidence lands after the merge decision it's meant to inform. A 4-branch
   promotion model was considered and rejected (solves environment
   promotion, not PR ordering, and this project has no deployable
-  environments to promote to). Decision: collapse to one PR per task --
-  `qa` commits its report onto the same branch as the implementation,
-  updating the existing PR. Fix handed off as a GitHub issue for
-  `developer` to implement (recommended: interactively, not via the
-  unattended `claude-dev` label, since it edits the pipeline's own
-  governance files), not yet merged. Full detail: `decisions.md`,
-  "Phase 2 (T004-T008) succeeded, but confirmed a real
-  two-PR-per-task gap."
+  environments to promote to). **Fix shipped same day** (PR #81, issue
+  #80): `qa` now commits its report onto the same branch as the
+  implementation, updating the existing PR instead of opening a second
+  one — confirmed via the commit graph. Full detail: `decisions.md`,
+  "Two-PR-per-task fix shipped; three more real gaps found and fixed the
+  same way."
+
+- **2026-09-05/06 -- Three more process gaps found and fixed alongside
+  the above.** (1) A closing-keyword bug (issue #74): three merged PRs
+  referenced their issue in the title but used non-closing body phrasing,
+  so GitHub never auto-closed them — fixed by requiring a literal
+  `Closes #N`/`Fixes #N` body line, documented in `CLAUDE.md` and built
+  into `claude-dev-agent.yml`'s generated prompt. (2)
+  `claude-dev-agent.yml`'s auth switched from `CLAUDE_CODE_OAUTH_TOKEN` to
+  a direct Anthropic API key (`ANTHROPIC_API_KEY_DEV`) — undocumented at
+  the time, reconstructed from commit history for this update; **note
+  WhisperFlow's `SECURITY-NOTES.md` still describes the old OAuth-token
+  mechanism and hasn't been corrected.** (3) A review-triggered auto-fix
+  loop was added (`pull_request_review`/`changes_requested` trigger, with
+  a `MAX_AUTO_FIX_ROUNDS` safety cap) so `claude-dev-agent.yml` can push a
+  fix commit directly when `reviewer` requests changes, rather than
+  requiring a human to re-invoke `developer` each round — motivated by a
+  real incident (T010/PR #85 ran six review rounds with nothing bounding
+  it). Also shipped: the same five subagent role definitions mirrored
+  under `.github/agents/` for VS Code/GitHub Copilot's own custom-agents
+  feature, alongside `.claude/agents/`. Full detail: `decisions.md`, same
+  entry as the two-PR-per-task fix above.
 
 ---
 

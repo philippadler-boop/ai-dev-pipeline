@@ -1085,3 +1085,156 @@ rules that govern its own subagents -- nothing in the tool allowlists
 actually prevents `developer` (interactive or unattended) from editing
 these files, so this is a judgment call about which class of change
 deserves a human watching it happen, not an enforced restriction.
+
+---
+
+## 2026-09-05/06 -- Two-PR-per-task fix shipped; three more real gaps found and fixed the same way
+
+The two-PR-per-task fix decided earlier the same day was implemented and
+merged: `qa` now commits its validation report as an additional commit
+onto the same branch as the implementation it validates (PR #81, issue
+#80), rather than opening a second branch/PR after the fact. Confirmed via
+the commit graph, not just the description of the fix -- issue #80's own
+validation report (`7d6a576`) landed on the same branch/PR as its own fix.
+
+Three more issues surfaced from continued real operation, each fixed at
+the source rather than patched around in the moment:
+
+1. **Closing-keyword bug (issue #74).** Three already-merged PRs (for
+   issues #1, #5, #8) referenced their issue in the PR *title* (enough to
+   satisfy `traceability.yml`) but never triggered GitHub's auto-close,
+   because the PR *body* used non-closing phrasing ("closes issue #1",
+   "Refs #5") or no reference at all. GitHub only auto-closes an issue
+   from a closing keyword in the body or a commit message, never the
+   title. Fixed by making a literal `Closes #N`/`Fixes #N` body line an
+   explicit, documented rule (`CLAUDE.md`, "Working conventions", PR #76)
+   and building it into `claude-dev-agent.yml`'s own generated prompt (PR
+   #78), so unattended PRs get it right from the start rather than only
+   interactive ones.
+2. **`claude-dev-agent.yml`'s auth switched from `CLAUDE_CODE_OAUTH_TOKEN`
+   to a direct Anthropic API key** (`ANTHROPIC_API_KEY_DEV`, PRs #86 and
+   #90) -- a reversal of M8's original "one billing surface, subscription
+   allowance" choice. No reasoning for this was captured in `decisions.md`
+   or `SECURITY-NOTES.md` at the time; reconstructed here from the raw
+   commit history (`96bdf60`, `71328a6`) while writing this update, not
+   from a contemporaneous note. **`SECURITY-NOTES.md` still describes the
+   OAuth-token mechanism as current** -- this is now a stale doc, flagged
+   again at the bottom of the 2026-09-17 entry below, not yet corrected.
+3. **Review-triggered auto-fix loop added** (`pull_request_review` /
+   `changes_requested` trigger, PR #93, drafted 2026-09-06): once
+   `reviewer` (still a manually-invoked local session, per M8's scope --
+   this doesn't change that) posts a request-changes review,
+   `claude-dev-agent.yml` now also fires, checks out the *existing* PR
+   branch, and pushes a fix commit -- instead of requiring a human to
+   re-invoke `developer` by hand for every round. A `MAX_AUTO_FIX_ROUNDS`
+   cap (default 3) stops the loop and hands back to a human once exceeded,
+   motivated directly by a real incident this same window surfaced:
+   T010/PR #85 went through six review rounds with nothing bounding it.
+   The workflow's own header comments flagged this as unverified beyond a
+   syntax check at ship time ("needs a real throwaway-PR smoke test
+   before trusting it") -- no dedicated smoke test is recorded, but real
+   task work afterward did exercise it at least once (T004's validation
+   report notes a genuine `CHANGES_REQUESTED` round resolving cleanly
+   before merge).
+
+Also shipped: subagent role definitions mirrored for VS Code/GitHub
+Copilot's own "custom agents" feature (`.github/agents/*.md`,
+`*.agent.md`, and `.github/agents/roles/*.md`, PRs #99/#101), alongside
+the existing `.claude/agents/*.md`. Same five roles, same restrictions
+(`reviewer` still carries none of `Write`/`Edit`/`Bash` in either form) --
+so day-to-day work from either tool draws from one shared set of role
+definitions rather than two copies that can silently drift apart.
+
+## 2026-09-06 -- Two features shipped outside the Spec Kit flow: CLI banner, Windows MSI packaging
+
+Two pieces of real, user-visible work landed as direct GitHub issues
+(#110, #112, #114) rather than through `/speckit.specify`/the Requirements
+Gate: a compact magenta-and-gold 3D banner on `--help` output, and
+packaging WhisperFlow as a Windows MSI installer -- a PyInstaller
+one-directory build plus a WiX installer bundling FFmpeg
+(`packaging/windows/`, `whisperflow.spec`, `scripts/build-windows-msi.ps1`),
+including a same-week follow-up fixing real WiX authoring errors and a
+misplaced bundled FFmpeg path found via an actual install/uninstall test
+on Windows, not just a build-succeeded check.
+
+Worth naming plainly rather than glossing over: this is the first real
+case of feature work bypassing the Requirements/Design Gate
+(`assessment.md` Section 6) entirely -- both went straight from a GitHub
+issue to `developer` to merge, with no `spec.md` entry, no `FR-`/`SC-`
+traceability, no ADR. Neither seemed large enough to obviously need the
+full Spec Kit chain (help-text cosmetics; a packaging format for an
+already-fully-specified CLI), and both still went through PR review, CI,
+and human merge -- the *execution* gates held even though the
+*requirements* gate was skipped entirely rather than collapsed into a
+lightweight doc the way `assessment.md` Section 2 describes for small
+work. Not treated as a process failure worth unwinding after the fact,
+but worth recording as a real, observed data point on "how small is small
+enough to skip Spec Kit" -- a line `assessment.md`/this log hasn't
+actually drawn yet, just assumed would be obvious in the moment.
+
+## 2026-09-17 -- Feature 001 (video-subtitle-generator) complete: all 29 tasks shipped; two new real gaps found, not yet fixed
+
+All 29 tasks in `specs/001-video-subtitle-generator/tasks.md` (T001-T029)
+are merged to `main`, each carrying CI-green, an independent `reviewer`
+approval, and a `qa` validation report on the same PR (per the
+two-PR-per-task collapse above) -- confirmed via `tasks.md`'s own
+checkboxes (`grep`, not the file's prose) and `docs/validation/` (30
+reports on disk). This closes out the pilot feature this whole pipeline
+was stood up to run end-to-end, not just the T001-T003 slice M7/M8 used
+to prove the supervised/unattended mechanism itself.
+
+Two more real gaps were found from operating the pipeline at this scale,
+filed as GitHub issues rather than fixed immediately -- both still open
+at time of writing:
+
+- **Issue #131 -- `/speckit.taskstoissues` creates issues with an empty
+  body.** Every task issue (spot-checked #1, #5, #10, #15, #20, #25, #29)
+  is a bare title with a genuinely empty body -- traced to upstream Spec
+  Kit's own `speckit-taskstoissues` skill, which never constructs a body
+  from `tasks.md`'s FR-xxx references or acceptance criteria; confirmed
+  as upstream template behavior (zero occurrences of "body" in the skill
+  file), not a local misconfiguration. Not a correctness gap -- the
+  unattended `developer` run reads `tasks.md` directly and worked
+  correctly across all 29 tasks regardless -- but a readability one: the
+  issue title is the only signal `claude-dev-agent.yml`'s own prompt gives
+  an unattended run about which task it's implementing.
+- **Issue #132 -- `qa` must run only after review has settled, not
+  mid-review.** Reconstructed from a real historical incident: T010/PR
+  #85's `qa` validation report was committed while `reviewer`'s review
+  cycle was still active -- four more fix commits landed on the branch
+  afterward, so the code `qa` actually validated wasn't the code that
+  ultimately merged. `qa.md`'s own precondition ("use after a PR is
+  reviewed and approved") wasn't met that time. Not observed recurring
+  across the later T020-T029 work (the operating session was careful to
+  wait for review to settle each time), but that's operator discipline,
+  not anything the process itself enforces -- nothing currently stops a
+  future run, automated or human-driven, from repeating it. Directly
+  relevant to the review-triggered auto-fix loop shipped 2026-09-06: as
+  that loop takes over more of the review-round cycle, an unenforced
+  "qa waits for review to settle" rule gets *more* likely to be violated
+  by automation over time, not less.
+
+A further-out idea was also captured, not started: `docs/ideas/reviewer-
+qa-automation.md` sketches moving `reviewer` and `qa` themselves into
+GitHub Actions -- currently both are still manually-invoked local
+sessions by design, the one piece of M8's original scope deliberately
+left unautomated. It lists six explicit open questions rather than
+answers, including how `reviewer`'s tool restriction would survive
+automated invocation and how issue #132's ordering concern would be
+enforced structurally instead of by convention. This is Concept-stage
+only -- not yet a requirements spec, and per this project's own
+lifecycle it should go through Constitution-aligned Specify/Plan before
+any code changes, the same as feature 001 did.
+
+**Known documentation gap, found while writing this update:**
+`SECURITY-NOTES.md` (WhisperFlow) still describes `CLAUDE_CODE_OAUTH_TOKEN`
+as `claude-dev-agent.yml`'s auth mechanism; the workflow has actually
+used a direct Anthropic API key (`ANTHROPIC_API_KEY_DEV`) since PRs
+#86/#90 (2026-09-05, see above). Not corrected as part of this update --
+this log's own convention is that `decisions.md` records changes to the
+pipeline itself, and fixing a stale doc inside the pilot's own repo is a
+WhisperFlow change, not an `ai-dev-pipeline` one -- but flagged here so
+it isn't lost a second time.
+
+`implementation-plan.md`'s "Post-M9" section updated to reflect all of
+the above.
